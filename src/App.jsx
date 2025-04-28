@@ -1,8 +1,8 @@
 import React from "react";
-import ChatbotPage from "./ChatbotPage";
+import ChatInterface from "./ChatInterface";
 
 function App() {
-  return <ChatbotPage />;
+  return <ChatInterface />;
 }
 
 export default App;

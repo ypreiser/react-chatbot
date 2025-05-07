@@ -1,0 +1,99 @@
+.whatsapp-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-container h1 {
+  color: #128c7e;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.connection-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.system-prompt-input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 300px;
+}
+
+.connect-button,
+.disconnect-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.connect-button {
+  background-color: #128c7e;
+  color: white;
+}
+
+.connect-button:hover {
+  background-color: #075e54;
+}
+
+.disconnect-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.disconnect-button:hover {
+  background-color: #c82333;
+}
+
+.qr-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.qr-container h2 {
+  color: #128c7e;
+  margin-bottom: 1rem;
+}
+
+.qr-code {
+  max-width: 300px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  background-color: white;
+}
+
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background-color: #f8d7da;
+  border-radius: 5px;
+}
+
+.connection-status {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1rem;
+  background-color: #d4edda;
+  border-radius: 5px;
+  color: #155724;
+}
+
+.connection-status h2 {
+  margin: 0;
+  color: #155724;
+}

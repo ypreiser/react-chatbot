@@ -1,0 +1,276 @@
+/* --- START OF FILE src/pages/ChatInterface/ChatInterface.css --- */
+
+/* Added CSS Variables - ensure they match SystemPromptForm.css */
+:root {
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-background: #f5f5f5;
+  --border-color: #ddd;
+  --border-radius: 5px;
+  --padding-small: 0.5rem;
+  --padding-medium: 0.75rem;
+  --padding-large: 1rem;
+  --margin-medium: 1.5rem;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --text-color-dark: #333;
+  --text-color-light: #fff;
+  --error-color: #dc3545;
+  --success-color: #28a745;
+  --assistant-bubble-color: #f1f1f1; /* Defined explicitly */
+}
+
+
+.chat-container {
+  /* direction: rtl; */ /* Removed from container, manage per element */
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  height: calc(100vh - 70px); /* Adjust height based on header height */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-background);
+  font-family: var(--font-family);
+  color: var(--text-color-dark); /* Default text color */
+  /* Default to LTR, apply RTL where needed */
+  direction: ltr;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color); /* Use variable */
+  /* Default to LTR, adjust for RTL content inside */
+  direction: ltr;
+}
+
+/* Styles for the system prompt input/button container in the header */
+.system-prompt-container {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-medium); /* Use variable */
+   /* Adjust margin based on content, let flex handle spacing */
+   margin-left: auto; /* Push to right in LTR (default) */
+   /* In RTL, this container might need margin-right: auto */
+}
+
+/* Add RTL adjustment for the system prompt container if needed */
+.chat-container[dir="rtl"] .system-prompt-container {
+    margin-left: 0;
+    margin-right: auto; /* Push to left in RTL */
+    direction: rtl; /* Ensure contents are RTL */
+}
+
+
+.system-prompt-container input {
+  width: 200px;
+  padding: var(--padding-small); /* Use variable */
+  border: 1px solid var(--border-color); /* Use variable */
+  border-radius: var(--border-radius); /* Use variable */
+  font-size: 0.9rem; /* Smaller font */
+  background: #fff; /* White background for input */
+  /* direction: rtl; */ /* Removed, handle via parent or lang class if needed */
+  text-align: right; /* Keep text right-aligned for Hebrew input */
+}
+
+/* Specific placeholder alignment for RTL */
+.system-prompt-container input::placeholder {
+    text-align: right;
+    direction: rtl;
+}
+
+.system-prompt-container button {
+  padding: var(--padding-small) var(--padding-medium); /* Use variable */
+  border: none;
+  border-radius: var(--border-radius); /* Use variable */
+  background-color: var(--primary-color); /* Use variable */
+  color: var(--text-color-light); /* Use variable */
+  cursor: pointer;
+  font-size: 0.9rem; /* Smaller font */
+  transition: background-color 0.2s;
+}
+
+.system-prompt-container button:hover:not(:disabled) {
+  background-color: var(--primary-hover-color); /* Use variable */
+}
+
+/* Removed .logo and .chat-header h1 styles as they moved to Header */
+
+
+.end-session-btn {
+  background-color: var(--error-color); /* Use variable */
+  color: var(--text-color-light); /* Use variable */
+  border: none;
+  padding: var(--padding-small) var(--padding-medium); /* Use variable */
+  border-radius: var(--border-radius); /* Use variable */
+  cursor: pointer;
+  font-size: 0.9rem; /* Smaller font */
+  transition: background-color 0.2s;
+   margin-left: 20px; /* Space from prompt container in LTR */
+}
+.chat-container[dir="rtl"] .end-session-btn {
+   margin-left: 0;
+   margin-right: 20px; /* Space from prompt container in RTL */
+}
+
+
+.end-session-btn:hover:not(:disabled) {
+  background-color: #c82333; /* Darker red */
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--padding-medium); /* Use variable */
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-medium); /* Use variable */
+  height: 100%;
+  /* Ensure scrollbar is on the left in RTL */
+  direction: rtl; /* Keep scrollbar on left */
+}
+
+/* Wrapper inside messages-container to reset direction for message content */
+/* This is okay, but applying direction to .message-content might be cleaner */
+/* .messages-container > div {
+    direction: ltr;
+} */
+
+
+.message {
+  margin: 10px 0;
+  padding: var(--padding-medium); /* Use variable */
+  border-radius: var(--border-radius); /* Use variable */
+  max-width: 80%;
+  font-size: 0.95rem; /* Consistent message text size */
+  line-height: 1.4; /* Slightly smaller line height */
+  word-wrap: break-word; /* Ensure long words break */
+}
+
+.message.user {
+  background-color: var(--primary-color); /* Use variable */
+  color: var(--text-color-light); /* Use variable */
+  /* Alignment handled by margin-auto within parent RTL container */
+  margin-right: auto; /* Push to the right in RTL */
+  margin-left: 0;
+}
+
+.message.assistant {
+  background-color: var(--assistant-bubble-color); /* Use variable */
+  color: var(--text-color-dark); /* Use variable */
+   /* Alignment handled by margin-auto within parent RTL container */
+  margin-left: auto; /* Push to the left in RTL */
+  margin-right: 0;
+}
+
+.message.system {
+  background-color: var(--error-color); /* Use variable */
+  color: var(--text-color-light); /* Use variable */
+  text-align: center;
+  margin: 10px auto; /* Center system messages */
+}
+
+.message-content {
+  word-wrap: break-word;
+  white-space: pre-wrap; /* Respect newlines */
+  line-height: 1.4;
+   direction: ltr; /* Explicitly set text direction within bubbles */
+   text-align: initial; /* Allow text to align based on content direction */
+}
+
+
+.input-form {
+  display: flex;
+  gap: var(--padding-medium); /* Use variable */
+  margin-top: 20px;
+  align-items: flex-end; /* Align items to the bottom */
+   /* Default to LTR, adjust for RTL input */
+   direction: ltr;
+}
+
+/* Add RTL adjustment for input form if needed */
+.chat-container[dir="rtl"] .input-form {
+    direction: rtl; /* Ensure layout is RTL */
+}
+
+.input-form textarea {
+  flex: 1;
+  padding: var(--padding-small) var(--padding-medium); /* Adjusted padding */
+  border: 1px solid var(--border-color); /* Use variable */
+  border-radius: var(--border-radius); /* Use variable */
+  font-size: 0.95rem; /* Consistent input font size */
+  min-height: 40px;
+  max-height: 120px; /* Slightly reduced max height */
+  overflow-y: auto;
+  font-family: inherit;
+  line-height: 1.4; /* Consistent line height */
+  background: #fff; /* White background for input */
+  /* direction: rtl; */ /* Removed, handle via parent or lang class if needed */
+  text-align: right; /* Keep text right-aligned for Hebrew input */
+}
+
+/* Specific placeholder alignment for RTL */
+.input-form textarea::placeholder {
+    text-align: right;
+    direction: rtl;
+}
+
+.input-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color); /* Use variable */
+}
+
+.input-form button {
+  padding: var(--padding-medium) var(--padding-large); /* Adjusted padding */
+  background-color: var(--primary-color); /* Use variable */
+  color: var(--text-color-light); /* Use variable */
+  border: none;
+  border-radius: var(--border-radius); /* Use variable */
+  cursor: pointer;
+  font-size: 0.95rem; /* Consistent button font size */
+  transition: background-color 0.2s;
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.input-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  direction: ltr; /* Keep typing indicator animation LTR */
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background-color: #666;
+  border-radius: 50%;
+  display: inline-block;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+/* --- END OF FILE src/pages/ChatInterface/ChatInterface.css --- */

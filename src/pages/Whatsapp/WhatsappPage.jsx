@@ -8,13 +8,18 @@ const WhatsappPage = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [systemPromptName, setSystemPromptName] = useState("");
   const [error, setError] = useState(null);
+  const [qrRetryCount, setQrRetryCount] = useState(0);
 
   console.log("Current state:", {
     sessionId,
     hasQrCode: !!qrCode,
+    qrCode,
+    qrCodeLength: qrCode ? qrCode.length : 0,
     isConnected,
     systemPromptName,
     error,
+    qrRetryCount,
+    apiBaseUrl: API_BASE_URL,
   });
 
   const connectWhatsApp = async () => {
@@ -24,8 +29,9 @@ const WhatsappPage = () => {
     );
     try {
       setError(null);
-      console.log(`Making POST request to ${API_BASE_URL}/whatsapp/session`);
-      const response = await fetch(`${API_BASE_URL}/whatsapp/session`, {
+      const url = `${API_BASE_URL}/whatsapp/session`;
+      console.log("Making POST request to:", url);
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,16 +40,23 @@ const WhatsappPage = () => {
       });
 
       if (!response.ok) {
-        console.error("Failed to create session. Status:", response.status);
-        throw new Error("Failed to create session");
+        const errorText = await response.text();
+        console.error(
+          "Failed to create session. Status:",
+          response.status,
+          "Response:",
+          errorText
+        );
+        throw new Error(`Failed to create session: ${errorText}`);
       }
 
       const data = await response.json();
       console.log("Session created successfully:", data);
       setSessionId(data.sessionId);
+      setQrRetryCount(0);
       setTimeout(() => {
         fetchQRCode(data.sessionId);
-      }, 500);
+      }, 2000);
     } catch (err) {
       console.error("Error in connectWhatsApp:", err);
       setError(err.message);
@@ -53,13 +66,38 @@ const WhatsappPage = () => {
   const fetchQRCode = async (sid) => {
     console.log("Fetching QR code for session:", sid);
     try {
-      const response = await fetch(`${API_BASE_URL}/whatsapp/session/${sid}/qr`);
+      const url = `${API_BASE_URL}/whatsapp/session/${sid}/qr`;
+      console.log("Making GET request to:", url);
+      const response = await fetch(url);
+
       if (!response.ok) {
-        console.error("Failed to fetch QR code. Status:", response.status);
-        throw new Error("Failed to fetch QR code");
+        const errorText = await response.text();
+        console.error(
+          "Failed to fetch QR code. Status:",
+          response.status,
+          "Response:",
+          errorText
+        );
+        // throw new Error(`Failed to fetch QR code: ${errorText}`);
       }
+
       const data = await response.json();
-      console.log("QR code received successfully");
+      console.log("QR code received successfully. Data type:", typeof data.qr);
+      console.log("QR code data length:", data.qr ? data.qr.length : 0);
+
+      if (!data.qr) {
+        console.log("No QR code in response, will retry...");
+        if (qrRetryCount < 5) {
+          console.log("Retrying QR code fetch, attempt:", qrRetryCount);
+          setQrRetryCount((prev) => prev + 1);
+          setTimeout(() => fetchQRCode(sid), 2000);
+        } else {
+          throw new Error("Failed to get QR code after multiple attempts");
+        }
+        return;
+      }
+      
+      console.log("QR code received successfully:", data.qr);
       setQrCode(data.qr);
     } catch (err) {
       console.error("Error in fetchQRCode:", err);
@@ -75,19 +113,28 @@ const WhatsappPage = () => {
 
     console.log("Attempting to disconnect session:", sessionId);
     try {
-      const response = await fetch(`${API_BASE_URL}/whatsapp/session/${sessionId}`, {
+      const url = `${API_BASE_URL}/whatsapp/session/${sessionId}`;
+      console.log("Making DELETE request to:", url);
+      const response = await fetch(url, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        console.error("Failed to disconnect. Status:", response.status);
-        throw new Error("Failed to disconnect");
+        const errorText = await response.text();
+        console.error(
+          "Failed to disconnect. Status:",
+          response.status,
+          "Response:",
+          errorText
+        );
+        throw new Error(`Failed to disconnect: ${errorText}`);
       }
 
       console.log("Successfully disconnected session");
       setSessionId(null);
       setQrCode(null);
       setIsConnected(false);
+      setQrRetryCount(0);
     } catch (err) {
       console.error("Error in disconnectWhatsApp:", err);
       setError(err.message);
@@ -102,17 +149,25 @@ const WhatsappPage = () => {
       );
       const checkConnection = async () => {
         try {
-          console.log("Checking connection status for session:", sessionId);
-          const response = await fetch(
-            `${API_BASE_URL}/whatsapp/session/${sessionId}/status`
-          );
+          const url = `${API_BASE_URL}/whatsapp/session/${sessionId}/status`;
+          console.log("Checking connection status at:", url);
+          const response = await fetch(url);
+
           if (response.ok) {
-            console.log("Connection status check successful");
-            setIsConnected(true);
+            const data = await response.json();
+            console.log("Connection status check successful:", data);
+            if (data.status === "connected") {
+              setIsConnected(true);
+            } else {
+              setIsConnected(false);
+            }
           } else {
+            const errorText = await response.text();
             console.log(
               "Connection status check failed. Status:",
-              response.status
+              response.status,
+              "Response:",
+              errorText
             );
           }
         } catch (err) {
@@ -134,11 +189,11 @@ const WhatsappPage = () => {
   }, [isConnected]);
 
   // Log when QR code changes
-  useEffect(() => {
-    if (qrCode) {
-      console.log("QR code updated");
-    }
-  }, [qrCode]);
+//   useEffect(() => {
+//     if (qrCode) {
+//       console.log("QR code updated, length:", qrCode.length);
+//     }
+//   }, [qrCode]);
 
   return (
     <div className="whatsapp-container">
@@ -169,14 +224,28 @@ const WhatsappPage = () => {
 
       {error && (
         <div className="error-message">
-          {console.error("Error displayed:", error)} {error}
+          {console.error("Error displayed:", error)}
+          {error}
         </div>
       )}
 
       {qrCode && !isConnected && (
         <div className="qr-container">
           <h2>Scan QR Code to Connect</h2>
-          <img src={qrCode} alt="WhatsApp QR Code" className="qr-code" />
+          <img
+            src={qrCode}
+            alt="WhatsApp QR Code"
+            className="qr-code"
+            onError={(e) => {
+              console.error("Error loading QR code image:", e);
+              setError("Failed to load QR code image");
+            }}
+          />
+          {qrRetryCount > 0 && (
+            <p className="qr-retry-message">
+              Attempting to get QR code... (Attempt {qrRetryCount}/5)
+            </p>
+          )}
         </div>
       )}
 

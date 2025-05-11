@@ -3,8 +3,8 @@ import axios from "axios";
 import "./WhatsappPage.css";
 import { API_BASE_URL } from "../../constants/api";
 
-const STATUS_CHECK_INTERVAL = 5000; // Check status every 5 seconds
-const QR_RETRY_INTERVAL = 3000; // Retry QR code fetch every 3 seconds
+const STATUS_CHECK_INTERVAL = 10000; // Check status every 10 seconds
+const QR_RETRY_INTERVAL = 10000; // Retry QR code fetch every 10 seconds
 const MAX_QR_RETRIES = 10; // Max retries for QR code
 
 const WhatsappPage = () => {
@@ -125,7 +125,7 @@ const WhatsappPage = () => {
        }
 
     }
-  }, [connectionStatus, checkConnectionStatus]); // Dependencies
+  }, [connectionStatus]); // Dependencies
 
    // Effect to start/stop status polling
    useEffect(() => {
@@ -147,7 +147,7 @@ const WhatsappPage = () => {
         console.log(`Cleaning up timers for ${activeConnectionName}`);
         clearTimers();
     };
-  }, [activeConnectionName, checkConnectionStatus]); // Rerun when activeConnectionName changes
+  }, [activeConnectionName]); // Rerun when activeConnectionName changes
 
 
   // Connect Function

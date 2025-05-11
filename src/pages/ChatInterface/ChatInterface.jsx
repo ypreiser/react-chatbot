@@ -40,7 +40,8 @@ const ChatInterface = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/chat/${encodeURIComponent(trimmedPromptName)}/start`
+        `${API_BASE_URL}/chat/start`,
+        { systemName: trimmedPromptName }
       );
       const { sessionId: newSessionId } = response.data;
       setSessionId(newSessionId);

@@ -1,364 +1,271 @@
-/* --- START OF FILE src/pages/SystemPromptForm/SystemPromptForm.css --- */
-
-/* Define CSS variables for consistency */
-:root {
-  --primary-color: #007bff;
-  --primary-hover-color: #0056b3;
-  --secondary-background: #f5f5f5;
-  --border-color: #ddd;
-  --border-radius: 5px;
-  --padding-small: 0.5rem;
-  --padding-medium: 0.75rem;
-  --padding-large: 1rem;
-  --margin-medium: 1.5rem;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  --text-color-dark: #333;
-  --text-color-light: #fff;
-  --error-color: #dc3545;
-  --success-color: #28a745;
-  --remove-button-color: #dc3545; /* Explicit remove button color */
-  --remove-button-hover-color: #c82333;
-  --add-button-color: #28a745; /* Explicit add button color */
-  --add-button-hover-color: #218838;
-}
+/* SystemPromptForm.css */
+@import url('../../variables.css'); 
 
 .system-prompt-form {
-  max-width: 800px; /* Slightly smaller max width */
+  max-width: 850px; 
   margin: 2rem auto;
-  padding: var(--padding-large);
+  padding: var(--padding-large) var(--padding-extra-large, 1.5rem); 
   font-family: var(--font-family);
   background: #ffffff;
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08); 
   color: var(--text-color-dark);
-  font-size: 0.95rem; /* Slightly smaller base text */
+  font-size: 0.95rem;
 }
 
-/* Language-specific direction and alignment */
-.system-prompt-form.lang-he {
-  direction: rtl;
-  text-align: right;
-}
-
-.system-prompt-form.lang-en {
-  direction: ltr;
-  text-align: left;
-}
-
+.system-prompt-form.lang-he { direction: rtl; text-align: right; }
+.system-prompt-form.lang-en { direction: ltr; text-align: left; }
 
 .system-prompt-form h1 {
   text-align: center;
-  color: var(--primary-color); /* Use primary color */
-  margin-bottom: 2rem; /* Slightly less margin */
-  font-size: 1.8rem; /* Smaller heading */
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
   font-weight: 600;
 }
 
-.system-prompt-form h2 {
+.system-prompt-form h2.form-section-header {
   color: var(--primary-color);
-  border-bottom: 1px solid var(--border-color); /* Lighter border */
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: var(--padding-small);
-  margin: 2rem 0 1rem; /* Reduced margin */
-  font-size: 1.3rem; /* Smaller heading */
-  font-weight: 500;
-  cursor: pointer; /* Indicate it's clickable */
+  margin: 1.5rem 0 0; 
+  font-size: 1.2rem; 
+  font-weight: 600; 
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: color 0.2s;
 }
-
-.system-prompt-form h2:hover {
-  color: var(--primary-hover-color);
-}
-
+.system-prompt-form h2.form-section-header:hover { color: var(--primary-hover-color); }
 
 .system-prompt-form h3 {
-  color: var(--text-color-dark); /* Use dark text color */
-  margin: 1.5rem 0 0.8rem; /* Reduced margin */
-  font-size: 1.1rem; /* Smaller heading */
-  font-weight: 500;
-  border-bottom: 1px dotted #eee; /* Subtle separation */
+  color: var(--text-color-darker, #212529); 
+  margin: 1.2rem 0 0.6rem;
+  font-size: 1.05rem; 
+  font-weight: 600;
+  border-bottom: 1px dotted #e0e0e0;
   padding-bottom: 0.4rem;
 }
 
 .system-prompt-form h4 {
-  margin: 1rem 0 0.4rem; /* Reduced margin */
-  font-size: 1rem; /* Smaller heading */
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
   color: var(--text-color-dark);
   font-weight: 500;
 }
 
-.form-group {
-  margin-bottom: 1rem; /* Reduced margin */
-}
+.form-group { margin-bottom: 1rem; }
 
 .system-prompt-form label {
   display: block;
-  margin-bottom: 0.4rem; /* Reduced margin */
+  margin-bottom: 0.4rem;
   font-weight: 500;
-  color: var(--text-color-dark);
-  font-size: 0.9rem; /* Smaller label text */
+  color: var(--text-color-medium, #495057); 
+  font-size: 0.9rem;
 }
 
 .system-prompt-form input[type="text"],
-.system-prompt-form input[type="email"], /* Specific input types */
+.system-prompt-form input[type="email"],
 .system-prompt-form input[type="tel"],
 .system-prompt-form textarea {
   width: 100%;
-  padding: var(--padding-small) var(--padding-medium); /* Adjusted padding */
+  padding: var(--padding-small) var(--padding-medium);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   font-family: inherit;
-  font-size: 0.9rem; /* Smaller input text */
+  font-size: 0.95rem; 
   transition: border-color 0.2s, box-shadow 0.2s;
-  background: var(--secondary-background); /* Match chat background */
+  background: var(--secondary-background);
+  box-sizing: border-box;
 }
 
- /* Style specific input types that shouldn't be 100% width */
- .system-prompt-form input[type="checkbox"] {
-     width: auto; /* Checkboxes shouldn't take full width */
-     margin: 0; /* Remove default margin */
-     vertical-align: middle; /* Align with text */
- }
+.system-prompt-form input[type="checkbox"] {
+  width: auto;
+  margin: 0 0.5rem 0 0; 
+  vertical-align: middle;
+}
+.system-prompt-form.lang-he input[type="checkbox"] {
+    margin: 0 0 0 0.5rem; 
+}
 
 
 .system-prompt-form input:focus,
 .system-prompt-form textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); /* Match primary color focus */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
- /* Placeholder styles for RTL */
-  .system-prompt-form.lang-he input::placeholder,
-  .system-prompt-form.lang-he textarea::placeholder {
-    text-align: right;
-    direction: rtl;
-  }
-  .system-prompt-form.lang-en input::placeholder,
-  .system-prompt-form.lang-en textarea::placeholder {
-    text-align: left;
-    direction: ltr;
-  }
+.system-prompt-form.lang-he input::placeholder,
+.system-prompt-form.lang-he textarea::placeholder { text-align: right; direction: rtl; }
+.system-prompt-form.lang-en input::placeholder,
+.system-prompt-form.lang-en textarea::placeholder { text-align: left; direction: ltr; }
 
-
-.system-prompt-form textarea {
-  min-height: 80px; /* Slightly smaller default height */
-  resize: vertical;
-}
+.system-prompt-form textarea { min-height: 80px; resize: vertical; }
 
 .system-prompt-form button {
   background-color: var(--primary-color);
   color: var(--text-color-light);
   border: none;
-  padding: var(--padding-small) var(--padding-medium); /* Adjusted padding */
+  padding: var(--padding-small) var(--padding-medium);
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-size: 0.9rem; /* Smaller button text */
+  font-size: 0.9rem;
   font-weight: 500;
-  transition: background-color 0.2s, transform 0.1s;
-  display: inline-flex; /* For flex alignment if needed */
+  transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Space for icons */
+  gap: 0.5rem;
 }
+.system-prompt-form button:hover:not(:disabled) { background-color: var(--primary-hover-color); }
+.system-prompt-form button:active:not(:disabled) { transform: translateY(1px); }
+.system-prompt-form button:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
 
-.system-prompt-form button:hover {
-  background-color: var(--primary-hover-color);
-  transform: none; /* Remove translateY for simpler hover */
-}
-
-.system-prompt-form button:active {
-  transform: translateY(1px); /* Simple press effect */
-}
-
-.system-prompt-form button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.error {
-  color: var(--text-color-light); /* White text on error background */
-  background-color: var(--error-color); /* Error red background */
-  /* border: 1px solid #f5c6cb; */ /* Remove border */
+.error-message { 
+  color: var(--error-color);
+  background-color: var(--error-bg-color, #f8d7da); 
+  border: 1px solid var(--error-border-color, #f5c6cb); 
   padding: var(--padding-medium);
   border-radius: var(--border-radius);
   margin-bottom: var(--margin-medium);
   font-size: 0.9rem;
+  text-align: center;
 }
+
 
 .saved-message {
   color: var(--success-color);
-  margin-left: var(--padding-medium); /* Default LTR margin */
+  margin-left: var(--padding-medium); 
   font-size: 0.9rem;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
 }
-
-.system-prompt-form.lang-he .saved-message {
-    margin-left: 0;
-    margin-right: var(--padding-medium); /* Adjust margin for RTL */
-    direction: rtl; /* Ensure text direction is correct */
-}
-
+.system-prompt-form.lang-he .saved-message { margin-left: 0; margin-right: var(--padding-medium); direction: rtl; }
 
 .fetch-section {
   display: flex;
   gap: var(--padding-medium);
   margin-bottom: var(--margin-medium);
-  align-items: flex-start; /* Align button and input nicely */
+  align-items: center; 
+  flex-wrap: wrap; 
+}
+.fetch-section input { flex-grow: 1; min-width: 200px; } 
+
+.mode-indicator {
+    font-size: 0.9rem;
+    color: var(--text-color-medium, #6c757d);
+    margin-left: auto; 
+    white-space: nowrap;
+}
+.system-prompt-form.lang-he .mode-indicator {
+    margin-left: 0;
+    margin-right: auto; 
 }
 
-.fetch-section input {
-  flex-grow: 1;
-}
-
-.fetch-section button {
-    /* Adjust button padding if needed to align with input height */
-    padding-top: var(--padding-small);
-    padding-bottom: var(--padding-small);
-    align-self: stretch; /* Make button match input height */
-}
-
-/* Styles for collapsible sections */
-.form-section-header {
-    cursor: pointer;
-    padding: var(--padding-medium) 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 0; /* Remove margin from h2 */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1.3rem;
-    font-weight: 500;
-    color: var(--primary-color);
-    transition: color 0.2s;
-}
-
-.form-section-header:hover {
-    color: var(--primary-hover-color);
+.field-note {
+    display: block;
+    margin-top: 5px;
+    color: #555;
+    font-size: 0.8rem;
 }
 
 .section-arrow {
-    margin-left: var(--padding-small); /* Default LTR margin */
-    transition: transform 0.2s ease-in-out;
-    font-size: 1rem; /* Control arrow size */
-    line-height: 1; /* Center arrow vertically */
-    /* Base transform for downward arrow */
-    transform: rotate(0deg);
+  margin-left: var(--padding-small); 
+  transition: transform 0.2s ease-in-out;
+  font-size: 1rem;
+  line-height: 1;
+  transform: rotate(0deg);
 }
-
-.system-prompt-form.lang-he .section-arrow {
-    margin-left: 0;
-    margin-right: var(--padding-small); /* Adjust margin for RTL */
-    /* Base transform for RTL if the arrow character implies direction */
-    /* Using '▼' is direction neutral, so no base RTL flip needed on the arrow itself */
-}
-
-.section-arrow.open {
-    transform: rotate(180deg); /* Rotate 180deg when open in either direction */
-}
-
+.system-prompt-form.lang-he .section-arrow { margin-left: 0; margin-right: var(--padding-small); }
+.section-arrow.open { transform: rotate(180deg); }
 
 .section-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
-    padding: 0 var(--padding-small); /* Initial padding */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease-in-out, padding 0.35s ease-in-out, border 0.35s ease-in-out;
+  padding: 0 var(--padding-small);
+  border-top: none; 
 }
-
 .section-content.open {
-    max-height: 2000px; /* Needs to be large enough to fit content */
-    padding: var(--padding-medium) var(--padding-small); /* Add padding when open */
+  max-height: 3000px; 
+  padding: var(--padding-large) var(--padding-small); 
+  border-top: 1px solid var(--border-color); 
+  margin-top: 0.5rem; 
 }
-
 
 .array-section {
-  border: 1px dashed var(--border-color); /* Dashed border for distinction */
+  border: 1px dashed #e0e0e0; 
   padding: var(--padding-medium);
   border-radius: var(--border-radius);
+  margin-top: 0.5rem; 
   margin-bottom: var(--margin-medium);
-  background: #f9f9f9; /* Lighter background */
+  background: #fafafa; 
 }
 
 .array-item, .object-array-item {
   margin-bottom: var(--padding-medium);
   padding: var(--padding-medium);
   background-color: #fff;
-  border: 1px solid #eee; /* Lighter border */
+  border: 1px solid #eee;
   border-radius: var(--border-radius);
   position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Softer shadow */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
-
 .object-array-item {
     border: 1px solid var(--border-color);
-    /* Add gap for inner form groups if needed */
     display: flex;
     flex-direction: column;
-    gap: 0.75rem; /* Space between elements inside object item */
+    gap: 0.8rem; 
 }
-
-.object-array-item .form-group { /* Remove bottom margin from inner form groups */
-    margin-bottom: 0;
-}
+.object-array-item .form-group { margin-bottom: 0; }
+.object-array-item h4 { margin-top: 0; } 
 
 
 .remove-button {
-  background-color: var(--remove-button-color); /* Use variable */
+  background-color: var(--remove-button-color, var(--error-color));
   color: var(--text-color-light);
-  border: none; /* Ensure no default button border */
-  padding: 0.3rem 0.6rem; /* Smaller padding */
-  font-size: 0.8rem; /* Smaller text */
+  border: none;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.2s;
-  position: absolute; /* Position absolutely within item */
-  top: var(--padding-small); /* Adjusted position */
-  right: var(--padding-small); /* Adjusted position */
-  z-index: 1; /* Ensure button is clickable over content */
+  position: absolute;
+  top: var(--padding-small);
+  right: var(--padding-small); 
+  z-index: 1;
 }
-
-.remove-button:hover {
-  background-color: var(--remove-button-hover-color); /* Use variable */
-}
-
-.system-prompt-form.lang-he .remove-button {
-    right: auto; /* Remove right positioning */
-    left: var(--padding-small); /* Position on the left in RTL */
-}
-
+.remove-button:hover { background-color: var(--remove-button-hover-color, var(--error-hover-color)); }
+.system-prompt-form.lang-he .remove-button { right: auto; left: var(--padding-small); }
 
 .add-button {
-  background-color: var(--add-button-color); /* Use variable */
+  background-color: var(--add-button-color, var(--success-color));
   color: var(--text-color-light);
   margin-top: var(--padding-medium);
-  padding: 0.5rem 1rem; /* Standard button padding */
-  border: none; /* Ensure no default button border */
+  padding: 0.5rem 1rem;
+  border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.2s;
 }
-
-.add-button:hover {
-  background-color: var(--add-button-hover-color); /* Use variable */
-}
+.add-button:hover { background-color: var(--add-button-hover-color, var(--success-hover-color)); }
 
 .form-actions {
-  margin-top: 2rem; /* Reduced margin */
+  margin-top: 2rem;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem; /* Gap between buttons/messages */
+  gap: 1rem;
 }
 
 .save-button {
-  padding: var(--padding-large) 2rem; /* Larger padding for main button */
-  font-size: 1rem; /* Standard text size for main button */
+  padding: var(--padding-medium) var(--padding-extra-large, 1.5rem); 
+  font-size: 1rem;
 }
 
 .language-selector {
@@ -368,43 +275,45 @@
     justify-content: center;
     gap: 1rem;
 }
-
 .language-selector button {
     padding: var(--padding-small) var(--padding-medium);
     font-size: 0.9rem;
     background-color: #eee;
     color: var(--text-color-dark);
-    border: none; /* Ensure no default button border */
+    border: 1px solid transparent; 
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s;
 }
-
-.language-selector button:hover:not(:disabled) { /* Only hover on enabled */
-    background-color: #ccc;
-}
-
+.language-selector button:hover:not(:disabled) { background-color: #ddd; }
 .language-selector button:disabled {
     background-color: var(--primary-color);
     color: var(--text-color-light);
+    border-color: var(--primary-color);
     cursor: default;
 }
 
-/* Ensure textareas in RTL form correctly */
+.mcp-enabled-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0.5rem; 
+}
+.mcp-enabled-group label {
+    margin-bottom: 0; 
+}
+
 .system-prompt-form.lang-he textarea,
- .system-prompt-form.lang-he input[type="text"],
- .system-prompt-form.lang-he input[type="email"],
- .system-prompt-form.lang-he input[type="tel"] {
+.system-prompt-form.lang-he input[type="text"],
+.system-prompt-form.lang-he input[type="email"],
+.system-prompt-form.lang-he input[type="tel"] {
     text-align: right;
     direction: rtl;
 }
- .system-prompt-form.lang-en textarea,
- .system-prompt-form.lang-en input[type="text"],
- .system-prompt-form.lang-en input[type="email"],
- .system-prompt-form.lang-en input[type="tel"] {
+.system-prompt-form.lang-en textarea,
+.system-prompt-form.lang-en input[type="text"],
+.system-prompt-form.lang-en input[type="email"],
+.system-prompt-form.lang-en input[type="tel"] {
     text-align: left;
     direction: ltr;
 }
-
-
-/* --- END OF FILE src/pages/SystemPromptForm/SystemPromptForm.css --- */

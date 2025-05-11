@@ -1,17 +1,34 @@
 import React from "react";
-import "./Header.css"; // Import local CSS
-import logo from "../../assets/logoTenLow-02.jpg"; // Correct path relative to src
+import { NavLink } from "react-router-dom";
+import "./Header.css";
+import logo from "../../assets/logoTenLow-02.jpg";
 
 export default function Header() {
   return (
-    <header className="header"> {/* Use semantic <header> tag */}
-      {/* Logo should be in src/assets */}
-      <img src={logo} alt="App Logo" className="header-logo" /> {/* Added logo */}
-      <h1>Chatbot Admin</h1> {/* More descriptive title for header */}
-      <nav className="nav"> {/* Use semantic <nav> tag */}
-        <a href="/">Chat Interface</a> 
-        <a href="/system">System Prompt Editor</a> 
-        <a href="/whatsapp">WhatsApp Connection</a> 
+    <header className="header">
+      <div className="header-left">
+        <img src={logo} alt="App Logo" className="header-logo" />
+        <h1>Chatbot Admin</h1>
+      </div>
+      <nav className="nav">
+        <NavLink
+          to="/"
+          className={({ isActive }) => (isActive ? "active-link" : "")}
+        >
+          Chat Interface
+        </NavLink>
+        <NavLink
+          to="/system"
+          className={({ isActive }) => (isActive ? "active-link" : "")}
+        >
+          System Prompts
+        </NavLink>
+        <NavLink
+          to="/whatsapp"
+          className={({ isActive }) => (isActive ? "active-link" : "")}
+        >
+          WhatsApp
+        </NavLink>
       </nav>
     </header>
   );

@@ -1,199 +1,231 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import axios from "axios";
 import "./WhatsappPage.css";
 import { API_BASE_URL } from "../../constants/api";
 
+const STATUS_CHECK_INTERVAL = 5000; // Check status every 5 seconds
+const QR_RETRY_INTERVAL = 3000; // Retry QR code fetch every 3 seconds
+const MAX_QR_RETRIES = 10; // Max retries for QR code
+
 const WhatsappPage = () => {
-  const [sessionId, setSessionId] = useState(null);
-  const [qrCode, setQrCode] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionNameInput, setConnectionNameInput] = useState(""); // Name being typed
+  const [activeConnectionName, setActiveConnectionName] = useState(null); // Name of the current/last active connection
+  const [connectionStatus, setConnectionStatus] = useState(null); // Backend status string
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState(null);
   const [systemPromptName, setSystemPromptName] = useState("");
   const [error, setError] = useState(null);
-  const [qrRetryCount, setQrRetryCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false); // General loading state (connect/disconnect)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
-  console.log("Current state:", {
-    sessionId,
-    hasQrCode: !!qrCode,
-    qrCode,
-    qrCodeLength: qrCode ? qrCode.length : 0,
-    isConnected,
-    systemPromptName,
-    error,
-    qrRetryCount,
-    apiBaseUrl: API_BASE_URL,
-  });
+  // Refs for intervals to ensure they are cleared properly
+  const statusIntervalRef = useRef(null);
+  const qrRetryTimeoutRef = useRef(null);
+  const qrRetryCountRef = useRef(0); // Ref to track retries
 
+  // Helper to clear intervals/timeouts
+  const clearTimers = () => {
+    if (statusIntervalRef.current) clearInterval(statusIntervalRef.current);
+    if (qrRetryTimeoutRef.current) clearTimeout(qrRetryTimeoutRef.current);
+    statusIntervalRef.current = null;
+    qrRetryTimeoutRef.current = null;
+     qrRetryCountRef.current = 0; // Reset retry count
+  };
+
+  // Fetch Status Function
+  const checkConnectionStatus = useCallback(async (connName) => {
+    if (!connName || isCheckingStatus) return;
+    setIsCheckingStatus(true);
+    // console.log(`Checking status for ${connName}...`);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/whatsapp/session/${connName}/status`);
+      const newStatus = response.data.status;
+      console.log(`Status for ${connName}: ${newStatus}`);
+      setConnectionStatus(newStatus);
+
+      // Handle state transitions based on status
+      if (newStatus === 'connected' || newStatus === 'authenticated') {
+        setQrCodeDataUrl(null); // Clear QR code if connected
+        clearTimeout(qrRetryTimeoutRef.current); // Stop QR retries
+      } else if (newStatus === 'qr_ready') {
+        // If status becomes qr_ready, try fetching QR immediately
+         fetchQRCode(connName);
+      } else if (newStatus === 'disconnected' || newStatus === 'auth_failed' || newStatus === 'not_found') {
+         // If disconnected/failed, clear everything and stop polling
+         setError(newStatus === 'auth_failed' ? 'Authentication failed. Please scan QR again.' : `Disconnected (${newStatus}). Session closed.`);
+         clearTimers();
+         setActiveConnectionName(null);
+         setConnectionStatus(null);
+         setQrCodeDataUrl(null);
+         setIsLoading(false); // Ensure loading is stopped
+         setConnectionNameInput(''); // Clear input field
+      }
+
+    } catch (err) {
+      console.error(`Error checking status for ${connName}:`, err);
+      // If status check fails (e.g., 404 session gone), treat as disconnected
+      if (err.response && err.response.status === 404) {
+          setError(`Session '${connName}' not found on server.`);
+          clearTimers();
+          setActiveConnectionName(null);
+          setConnectionStatus(null);
+          setQrCodeDataUrl(null);
+          setIsLoading(false);
+          setConnectionNameInput('');
+      } else {
+          // Temporary network error, maybe show a different error
+           setError(`Error checking status: ${err.message}`);
+      }
+    } finally {
+         setIsCheckingStatus(false);
+    }
+  }, [isCheckingStatus]); // Dependency
+
+  // Fetch QR Code Function
+  const fetchQRCode = useCallback(async (connName) => {
+    if (!connName) return;
+    console.log(`Fetching QR code for ${connName}, attempt ${qrRetryCountRef.current + 1}`);
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/whatsapp/session/${connName}/qr`);
+      const qrData = response.data.qr;
+
+      if (qrData && typeof qrData === 'string' && qrData.startsWith('data:image/png;base64,')) {
+        console.log(`QR code received for ${connName}.`);
+        setQrCodeDataUrl(qrData);
+        setError(null);
+        clearTimeout(qrRetryTimeoutRef.current); // Stop retrying once QR is received
+        qrRetryCountRef.current = 0; // Reset retries
+      } else {
+        console.log(`No valid QR code yet for ${connName}, status might not be qr_ready or QR generation pending.`);
+        // Continue retrying if status is still qr_ready and retries not exceeded
+         if (connectionStatus === 'qr_ready' && qrRetryCountRef.current < MAX_QR_RETRIES) {
+            qrRetryCountRef.current++;
+            qrRetryTimeoutRef.current = setTimeout(() => fetchQRCode(connName), QR_RETRY_INTERVAL);
+         } else if (qrRetryCountRef.current >= MAX_QR_RETRIES) {
+             setError("Failed to retrieve QR code after multiple attempts. Try reconnecting.");
+             clearTimers(); // Stop trying
+         }
+      }
+    } catch (err) {
+      console.error(`Error fetching QR code for ${connName}:`, err);
+       // If QR fetch fails (e.g., 404), check status to see if session is still valid
+       if (err.response && err.response.status === 404) {
+           console.log("QR endpoint returned 404, checking session status...");
+           checkConnectionStatus(connName); // Check status to see if session is still supposed to be in QR state
+       } else {
+            setError(`Failed to fetch QR code: ${err.message}`);
+       }
+       // Don't stop polling immediately on transient errors unless it's 404 or max retries
+       if (connectionStatus === 'qr_ready' && qrRetryCountRef.current < MAX_QR_RETRIES) {
+            qrRetryCountRef.current++;
+            qrRetryTimeoutRef.current = setTimeout(() => fetchQRCode(connName), QR_RETRY_INTERVAL);
+       } else if (qrRetryCountRef.current >= MAX_QR_RETRIES) {
+           setError("Failed to retrieve QR code after multiple attempts. Try reconnecting.");
+           clearTimers();
+       }
+
+    }
+  }, [connectionStatus, checkConnectionStatus]); // Dependencies
+
+   // Effect to start/stop status polling
+   useEffect(() => {
+    clearTimers(); // Clear any existing timers when activeConnectionName changes
+
+    if (activeConnectionName) {
+        console.log(`Starting status polling for ${activeConnectionName}`);
+      // Initial check
+      checkConnectionStatus(activeConnectionName);
+      // Start interval
+      statusIntervalRef.current = setInterval(
+        () => checkConnectionStatus(activeConnectionName),
+        STATUS_CHECK_INTERVAL
+      );
+    }
+
+    // Cleanup function
+    return () => {
+        console.log(`Cleaning up timers for ${activeConnectionName}`);
+        clearTimers();
+    };
+  }, [activeConnectionName, checkConnectionStatus]); // Rerun when activeConnectionName changes
+
+
+  // Connect Function
   const connectWhatsApp = async () => {
-    console.log(
-      "Attempting to connect WhatsApp with system prompt:",
-      systemPromptName
-    );
-    try {
-      setError(null);
-      const url = `${API_BASE_URL}/whatsapp/session`;
-      console.log("Making POST request to:", url);
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ systemPromptName }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          "Failed to create session. Status:",
-          response.status,
-          "Response:",
-          errorText
-        );
-        throw new Error(`Failed to create session: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("Session created successfully:", data);
-      setSessionId(data.sessionId);
-      setQrRetryCount(0);
-      setTimeout(() => {
-        fetchQRCode(data.sessionId);
-      }, 2000);
-    } catch (err) {
-      console.error("Error in connectWhatsApp:", err);
-      setError(err.message);
-    }
-  };
-
-  const fetchQRCode = async (sid) => {
-    console.log("Fetching QR code for session:", sid);
-    try {
-      const url = `${API_BASE_URL}/whatsapp/session/${sid}/qr`;
-      console.log("Making GET request to:", url);
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          "Failed to fetch QR code. Status:",
-          response.status,
-          "Response:",
-          errorText
-        );
-        // throw new Error(`Failed to fetch QR code: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("QR code received successfully. Data type:", typeof data.qr);
-      console.log("QR code data length:", data.qr ? data.qr.length : 0);
-
-      if (!data.qr) {
-        console.log("No QR code in response, will retry...");
-        if (qrRetryCount < 5) {
-          console.log("Retrying QR code fetch, attempt:", qrRetryCount);
-          setQrRetryCount((prev) => prev + 1);
-          setTimeout(() => fetchQRCode(sid), 2000);
-        } else {
-          throw new Error("Failed to get QR code after multiple attempts");
-        }
-        return;
-      }
-      
-      console.log("QR code received successfully:", data.qr);
-      setQrCode(data.qr);
-    } catch (err) {
-      console.error("Error in fetchQRCode:", err);
-      setError(err.message);
-    }
-  };
-
-  const disconnectWhatsApp = async () => {
-    if (!sessionId) {
-      console.log("No active session to disconnect");
+    const nameToConnect = connectionNameInput.trim();
+    const promptToUse = systemPromptName.trim();
+    if (!nameToConnect || !promptToUse) {
+      setError("Both Connection Name and System Prompt Name are required.");
       return;
     }
 
-    console.log("Attempting to disconnect session:", sessionId);
+    // Disconnect previous session if any
+    if (activeConnectionName) {
+        await disconnectWhatsApp(true); // Disconnect silently before starting new one
+    }
+
+
+    setIsLoading(true);
+    setError(null);
+    setQrCodeDataUrl(null);
+    setConnectionStatus('initializing'); // Optimistic status
+     qrRetryCountRef.current = 0; // Reset retries for new connection
+
     try {
-      const url = `${API_BASE_URL}/whatsapp/session/${sessionId}`;
-      console.log("Making DELETE request to:", url);
-      const response = await fetch(url, {
-        method: "DELETE",
+      console.log(`Connecting with name: ${nameToConnect}, prompt: ${promptToUse}`);
+      await axios.post(`${API_BASE_URL}/whatsapp/session`, {
+        connectionName: nameToConnect,
+        systemPromptName: promptToUse,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          "Failed to disconnect. Status:",
-          response.status,
-          "Response:",
-          errorText
-        );
-        throw new Error(`Failed to disconnect: ${errorText}`);
-      }
-
-      console.log("Successfully disconnected session");
-      setSessionId(null);
-      setQrCode(null);
-      setIsConnected(false);
-      setQrRetryCount(0);
+      setActiveConnectionName(nameToConnect); // Set active name, polling will start via useEffect
+      // Status will be updated by the polling mechanism
     } catch (err) {
-      console.error("Error in disconnectWhatsApp:", err);
-      setError(err.message);
+        const errorMsg = err.response?.data?.error || err.message || "Failed to initialize session";
+        console.error("Error connecting WhatsApp:", err);
+        setError(`Connection Error: ${errorMsg}`);
+        setConnectionStatus('failed_to_initialize');
+        setActiveConnectionName(null); // Ensure no active connection on failure
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (sessionId && qrCode) {
-      console.log(
-        "Setting up connection check interval for session:",
-        sessionId
-      );
-      const checkConnection = async () => {
-        try {
-          const url = `${API_BASE_URL}/whatsapp/session/${sessionId}/status`;
-          console.log("Checking connection status at:", url);
-          const response = await fetch(url);
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Connection status check successful:", data);
-            if (data.status === "connected") {
-              setIsConnected(true);
-            } else {
-              setIsConnected(false);
-            }
-          } else {
-            const errorText = await response.text();
-            console.log(
-              "Connection status check failed. Status:",
-              response.status,
-              "Response:",
-              errorText
-            );
-          }
-        } catch (err) {
-          console.error("Error checking connection:", err);
-        }
-      };
-
-      const interval = setInterval(checkConnection, 5000);
-      return () => {
-        console.log("Cleaning up connection check interval");
-        clearInterval(interval);
-      };
+  // Disconnect Function
+  const disconnectWhatsApp = async (silent = false) => {
+    if (!activeConnectionName) {
+      if (!silent) console.log("No active connection to disconnect.");
+      return;
     }
-  }, [sessionId, qrCode]);
 
-  // Log when connection status changes
-  useEffect(() => {
-    console.log("Connection status changed:", isConnected);
-  }, [isConnected]);
+    const nameToDisconnect = activeConnectionName; // Capture name before state changes
+    if (!silent) setIsLoading(true);
+    if (!silent) setError(null);
+    clearTimers(); // Stop polling immediately
 
-  // Log when QR code changes
-//   useEffect(() => {
-//     if (qrCode) {
-//       console.log("QR code updated, length:", qrCode.length);
-//     }
-//   }, [qrCode]);
+    try {
+        console.log(`Disconnecting ${nameToDisconnect}...`);
+        await axios.delete(`${API_BASE_URL}/whatsapp/session/${nameToDisconnect}`);
+        if (!silent) console.log(`Successfully disconnected ${nameToDisconnect}.`);
+    } catch (err) {
+        const errorMsg = err.response?.data?.error || err.message || "Failed to disconnect session";
+        console.error(`Error disconnecting ${nameToDisconnect}:`, err);
+        if (!silent) setError(`Disconnection Error: ${errorMsg}`);
+        // Continue with UI cleanup even if backend call fails
+    } finally {
+        // Reset state fully only if not silent (i.e., user initiated)
+        if (!silent) {
+            setActiveConnectionName(null);
+            setConnectionStatus(null);
+            setQrCodeDataUrl(null);
+            setIsLoading(false);
+            setConnectionNameInput(''); // Clear input only on manual disconnect
+            setSystemPromptName(''); // Clear prompt name as well
+        }
+    }
+  };
+
+  const isConnected = connectionStatus === 'connected' || connectionStatus === 'authenticated';
+
 
   return (
     <div className="whatsapp-container">
@@ -202,58 +234,68 @@ const WhatsappPage = () => {
       <div className="connection-controls">
         <input
           type="text"
-          value={systemPromptName}
-          onChange={(e) => {
-            console.log("System prompt name changed:", e.target.value);
-            setSystemPromptName(e.target.value);
-          }}
-          placeholder="Enter system prompt name"
-          className="system-prompt-input"
+          value={connectionNameInput}
+          onChange={(e) => setConnectionNameInput(e.target.value)}
+          placeholder="Connection name (e.g., MainOffice)"
+          className="connection-name-input"
+           disabled={isLoading || activeConnectionName} // Disable if loading or connected
         />
-
-        {!sessionId ? (
-          <button onClick={connectWhatsApp} className="connect-button">
-            Connect WhatsApp
-          </button>
-        ) : (
-          <button onClick={disconnectWhatsApp} className="disconnect-button">
-            Disconnect
-          </button>
-        )}
+        <input
+          type="text"
+          value={systemPromptName}
+          onChange={(e) => setSystemPromptName(e.target.value)}
+          placeholder="System prompt name"
+          className="system-prompt-input"
+           disabled={isLoading || activeConnectionName} // Disable if loading or connected
+        />
+        <button
+          onClick={connectWhatsApp}
+          className="connect-button"
+          disabled={isLoading || activeConnectionName || !connectionNameInput.trim() || !systemPromptName.trim()}
+        >
+          {isLoading ? "Connecting..." : "Connect"}
+        </button>
+        <button
+          onClick={() => disconnectWhatsApp()}
+          className="disconnect-button"
+          disabled={isLoading || !activeConnectionName}
+        >
+          {isLoading ? "Disconnecting..." : `Disconnect ${activeConnectionName || ''}`}
+        </button>
       </div>
 
-      {error && (
-        <div className="error-message">
-          {console.error("Error displayed:", error)}
-          {error}
-        </div>
-      )}
+      {error && <div className="error-message">{error}</div>}
 
-      {qrCode && !isConnected && (
-        <div className="qr-container">
-          <h2>Scan QR Code to Connect</h2>
-          <img
-            src={qrCode}
-            alt="WhatsApp QR Code"
-            className="qr-code"
-            onError={(e) => {
-              console.error("Error loading QR code image:", e);
-              setError("Failed to load QR code image");
-            }}
-          />
-          {qrRetryCount > 0 && (
-            <p className="qr-retry-message">
-              Attempting to get QR code... (Attempt {qrRetryCount}/5)
-            </p>
-          )}
-        </div>
-      )}
+      {/* Display Area */}
+      <div className="status-display-area">
+            {connectionStatus === 'initializing' && <p>Initializing connection...</p>}
 
-      {isConnected && (
-        <div className="connection-status">
-          <h2>WhatsApp Connected Successfully!</h2>
-        </div>
-      )}
+            {connectionStatus === 'qr_ready' && !isConnected && (
+                <div className="qr-container">
+                <h2>Scan QR Code to Connect</h2>
+                {qrCodeDataUrl ? (
+                    <img src={qrCodeDataUrl} alt="WhatsApp QR Code" className="qr-code"/>
+                ) : (
+                    <p>Loading QR Code... (Attempt {qrRetryCountRef.current + 1}/{MAX_QR_RETRIES})</p>
+                )}
+                </div>
+            )}
+
+            {isConnected && (
+                <div className="connection-status connected">
+                <h2>WhatsApp Connected Successfully!</h2>
+                <p>Connection Name: <strong>{activeConnectionName}</strong></p>
+                <p>Status: {connectionStatus}</p>
+                </div>
+            )}
+
+            {connectionStatus && !isConnected && connectionStatus !== 'qr_ready' && connectionStatus !== 'initializing' && (
+                 <div className={`connection-status ${connectionStatus}`}> {/* Add class for specific styling */}
+                    <h2>Connection Status: {connectionStatus}</h2>
+                    <p>Connection Name: {activeConnectionName}</p>
+                 </div>
+            )}
+       </div>
     </div>
   );
 };

@@ -22,7 +22,8 @@ const ChatInterface = () => {
 
   // Focus input effect
   useEffect(() => {
-    if (!isLoading && !isStartingSession && sessionId) { // Focus only when ready and session active
+    if (!isLoading && !isStartingSession && sessionId) {
+      // Focus only when ready and session active
       inputRef.current?.focus();
     }
   }, [isLoading, isStartingSession, sessionId]);
@@ -41,16 +42,25 @@ const ChatInterface = () => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/chat/start`,
-        { systemName: trimmedPromptName }
+        { systemName: trimmedPromptName },
+        { withCredentials: true } // Include credentials for session management
       );
       const { sessionId: newSessionId } = response.data;
       setSessionId(newSessionId);
       setActivePromptName(trimmedPromptName);
-      setMessages([{ role: "system", content: `Chat started with prompt: "${trimmedPromptName}". Session ID: ${newSessionId}` }]);
+      setMessages([
+        {
+          role: "system",
+          content: `Chat started with prompt: "${trimmedPromptName}". Session ID: ${newSessionId}`,
+        },
+      ]);
       localStorage.setItem("chatSessionId", newSessionId);
       localStorage.setItem("chatActivePromptName", trimmedPromptName);
     } catch (err) {
-      const errorMsg = err.response?.data?.error?.message || err.message || "Failed to start session";
+      const errorMsg =
+        err.response?.data?.error?.message ||
+        err.message ||
+        "Failed to start session";
       console.error("Error starting session:", err);
       setError(`Error starting session: ${errorMsg}`);
       setSessionId(null);
@@ -64,72 +74,102 @@ const ChatInterface = () => {
   }, [promptNameInput]); // Dependency: promptNameInput
 
   // Function to send a message
-  const sendMessage = useCallback(async (e) => {
-    if (e) e.preventDefault(); // Prevent default form submission if event is passed
-    const messageToSend = inputMessage.trim();
-    if (!messageToSend || !sessionId || isLoading || isStartingSession) return;
+  const sendMessage = useCallback(
+    async (e) => {
+      if (e) e.preventDefault(); // Prevent default form submission if event is passed
+      const messageToSend = inputMessage.trim();
+      if (!messageToSend || !sessionId || isLoading || isStartingSession)
+        return;
 
-    setIsLoading(true);
-    setInputMessage("");
-    setError(null);
+      setIsLoading(true);
+      setInputMessage("");
+      setError(null);
 
-    setMessages((prev) => [...prev, { role: "user", content: messageToSend }]);
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/chat/message`, {
-        sessionId,
-        message: messageToSend,
-        // Optionally pass systemName if backend needs it for routing/context verification
-        // systemName: activePromptName
-      });
-      const { response: assistantResponse } = response.data;
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: assistantResponse || "..." }, // Handle empty response
+        { role: "user", content: messageToSend },
       ]);
-    } catch (err) {
-      const errorMsg = err.response?.data?.error?.message || err.message || "Failed to send message";
-      console.error("Error sending message:", err);
-      setError(`Error: ${errorMsg}`);
-      setMessages((prev) => [...prev, { role: "system", content: `Error sending message: ${errorMsg}` }]);
-       // Optionally try to recover or suggest ending session
-       if (err.response?.status === 404) { // Session not found on backend
-           setError("Session expired or invalid. Please start a new session.");
-           endSession(true); // Force end session UI state
-       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sessionId, inputMessage, isLoading, isStartingSession, activePromptName]); // Dependencies
+
+      try {
+        const response = await axios.post(
+          `${API_BASE_URL}/chat/message`,
+          {
+            sessionId,
+            message: messageToSend,
+            // Optionally pass systemName if backend needs it for routing/context verification
+            // systemName: activePromptName
+          },
+          { withCredentials: true }
+        );
+        const { response: assistantResponse } = response.data;
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: assistantResponse || "..." }, // Handle empty response
+        ]);
+      } catch (err) {
+        const errorMsg =
+          err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to send message";
+        console.error("Error sending message:", err);
+        setError(`Error: ${errorMsg}`);
+        setMessages((prev) => [
+          ...prev,
+          { role: "system", content: `Error sending message: ${errorMsg}` },
+        ]);
+        // Optionally try to recover or suggest ending session
+        if (err.response?.status === 404) {
+          // Session not found on backend
+          setError("Session expired or invalid. Please start a new session.");
+          endSession(true); // Force end session UI state
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sessionId, inputMessage, isLoading, isStartingSession, activePromptName]
+  ); // Dependencies
 
   // Function to end the current session
-  const endSession = useCallback(async (force = false) => {
-    if (!sessionId || (isLoading && !force)) return;
+  const endSession = useCallback(
+    async (force = false) => {
+      if (!sessionId || (isLoading && !force)) return;
 
-    setIsLoading(true); // Use general loading state
-    setError(null);
+      setIsLoading(true); // Use general loading state
+      setError(null);
 
-    try {
-      // Only call backend if not forced (e.g., forced due to 404 error)
-      if (!force) {
-          await axios.post(`${API_BASE_URL}/chat/end`, { sessionId });
+      try {
+        // Only call backend if not forced (e.g., forced due to 404 error)
+        if (!force) {
+          await axios.post(
+            `${API_BASE_URL}/chat/end`,
+            { sessionId },
+            { withCredentials: true }
+          );
+        }
+      } catch (err) {
+        // Log error but still reset UI state
+        console.error("Error ending session on backend:", err);
+        // Optionally display a less critical error message
+        // setError(`Could not cleanly end session on server: ${err.message}`);
+      } finally {
+        setSessionId(null);
+        setActivePromptName("");
+        setPromptNameInput(""); // Clear the input field as well
+        setMessages([
+          {
+            role: "system",
+            content: "Session ended. Enter a prompt name to start a new chat.",
+          },
+        ]);
+        localStorage.removeItem("chatSessionId");
+        localStorage.removeItem("chatActivePromptName");
+        setIsLoading(false);
+        setIsStartingSession(false); // Ensure this is reset too
       }
-    } catch (err) {
-      // Log error but still reset UI state
-      console.error("Error ending session on backend:", err);
-       // Optionally display a less critical error message
-       // setError(`Could not cleanly end session on server: ${err.message}`);
-    } finally {
-      setSessionId(null);
-      setActivePromptName("");
-      setPromptNameInput(""); // Clear the input field as well
-      setMessages([{ role: "system", content: "Session ended. Enter a prompt name to start a new chat." }]);
-      localStorage.removeItem("chatSessionId");
-      localStorage.removeItem("chatActivePromptName");
-      setIsLoading(false);
-      setIsStartingSession(false); // Ensure this is reset too
-    }
-  }, [sessionId, isLoading]); // Dependency: sessionId, isLoading
+    },
+    [sessionId, isLoading]
+  ); // Dependency: sessionId, isLoading
 
   // Attempt to resume session on initial mount
   useEffect(() => {
@@ -137,15 +177,25 @@ const ChatInterface = () => {
     const savedPromptName = localStorage.getItem("chatActivePromptName");
 
     if (savedSessionId && savedPromptName) {
-        console.log("Attempting to resume session:", savedSessionId);
+      console.log("Attempting to resume session:", savedSessionId);
       // TODO: Add backend validation call here if needed
       // For now, just restore state
       setSessionId(savedSessionId);
       setActivePromptName(savedPromptName);
-      setMessages([{ role: "system", content: `Resumed session with prompt: "${savedPromptName}". Session ID: ${savedSessionId}` }]);
-       // Optionally fetch history here
+      setMessages([
+        {
+          role: "system",
+          content: `Resumed session with prompt: "${savedPromptName}". Session ID: ${savedSessionId}`,
+        },
+      ]);
+      // Optionally fetch history here
     } else {
-        setMessages([{ role: "system", content: "Enter a system prompt name to start a chat." }]);
+      setMessages([
+        {
+          role: "system",
+          content: "Enter a system prompt name to start a chat.",
+        },
+      ]);
     }
   }, []); // Run only on mount
 
@@ -168,9 +218,14 @@ const ChatInterface = () => {
               placeholder="System prompt name"
               onChange={(e) => setPromptNameInput(e.target.value)}
               disabled={isStartingSession}
-              onKeyDown={(e) => { if (e.key === 'Enter') startNewSession(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") startNewSession();
+              }}
             />
-            <button onClick={startNewSession} disabled={isStartingSession || !promptNameInput.trim()}>
+            <button
+              onClick={startNewSession}
+              disabled={isStartingSession || !promptNameInput.trim()}
+            >
               {isStartingSession ? "Starting..." : "Start Chat"}
             </button>
           </div>
@@ -180,7 +235,11 @@ const ChatInterface = () => {
             <strong>{activePromptName}</strong>
           </div>
         )}
-        <button onClick={() => endSession()} className="end-session-btn" disabled={!sessionId || isLoading || isStartingSession}>
+        <button
+          onClick={() => endSession()}
+          className="end-session-btn"
+          disabled={!sessionId || isLoading || isStartingSession}
+        >
           End Session
         </button>
       </div>
@@ -193,15 +252,18 @@ const ChatInterface = () => {
             <div className="message-content">{message.content}</div>
           </div>
         ))}
-        {isLoading && !isStartingSession && ( // Show typing indicator only during message sending
-          <div className="message assistant">
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span><span></span><span></span>
+        {isLoading &&
+          !isStartingSession && ( // Show typing indicator only during message sending
+            <div className="message assistant">
+              <div className="message-content">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -212,12 +274,19 @@ const ChatInterface = () => {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={sessionId ? "Type your message..." : "Start a session first..."}
+          placeholder={
+            sessionId ? "Type your message..." : "Start a session first..."
+          }
           disabled={isLoading || isStartingSession || !sessionId}
           rows={1}
           style={{ resize: "none" }}
         />
-        <button type="submit" disabled={isLoading || isStartingSession || !inputMessage.trim() || !sessionId}>
+        <button
+          type="submit"
+          disabled={
+            isLoading || isStartingSession || !inputMessage.trim() || !sessionId
+          }
+        >
           Send
         </button>
       </form>

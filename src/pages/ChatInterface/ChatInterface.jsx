@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios"; // Use axios for consistency if preferred
+import axios from "axios";
 import "./ChatInterface.css";
-import { API_BASE_URL } from "../../constants/api";
+import { API_CHAT_URL } from "../../constants/api";
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [sessionId, setSessionId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Combined loading state
+  const [isLoading, setIsLoading] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
-  const [promptNameInput, setPromptNameInput] = useState("");
-  const [activePromptName, setActivePromptName] = useState("");
-  const [error, setError] = useState(null); // Error state for user feedback
+  const [systemPromptIdInput, setSystemPromptIdInput] = useState("");
+  const [activeSystemPromptId, setActiveSystemPromptId] = useState("");
+  const [error, setError] = useState(null);
+  const [systemPrompts, setSystemPrompts] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -23,60 +24,70 @@ const ChatInterface = () => {
   // Focus input effect
   useEffect(() => {
     if (!isLoading && !isStartingSession && sessionId) {
-      // Focus only when ready and session active
       inputRef.current?.focus();
     }
   }, [isLoading, isStartingSession, sessionId]);
 
+  // Fetch all active system prompts on mount
+  useEffect(() => {
+    async function fetchPrompts() {
+      try {
+        const response = await axios.get(`${API_CHAT_URL}/prompts`);
+        setSystemPrompts(response.data || []);
+      } catch (err) {
+        const errorMsg =
+          err.response?.data?.error || err.message || "Failed to fetch prompts";
+        setError(errorMsg);
+        setSystemPrompts([]);
+      }
+    }
+    fetchPrompts();
+  }, []);
+
   // Function to start a new session
   const startNewSession = useCallback(async () => {
-    const trimmedPromptName = promptNameInput.trim();
-    if (!trimmedPromptName) {
-      setError("Please enter a system prompt name to start a new chat.");
+    const promptId = systemPromptIdInput.trim();
+    if (!promptId) {
+      setError("Please select a System Prompt to start a new chat.");
       return;
     }
     setIsStartingSession(true);
     setError(null);
-    setMessages([]); // Clear previous messages
+    setMessages([]);
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/chat/start`,
-        { systemName: trimmedPromptName },
-        { withCredentials: true } // Include credentials for session management
-      );
+      const response = await axios.post(`${API_CHAT_URL}/${promptId}/start`);
       const { sessionId: newSessionId } = response.data;
       setSessionId(newSessionId);
-      setActivePromptName(trimmedPromptName);
+      setActiveSystemPromptId(promptId);
       setMessages([
         {
           role: "system",
-          content: `Chat started with prompt: "${trimmedPromptName}". Session ID: ${newSessionId}`,
+          content: `Chat started with SystemPrompt: ${
+            systemPrompts.find((p) => p._id === promptId)?.name || promptId
+          }`,
         },
       ]);
       localStorage.setItem("chatSessionId", newSessionId);
-      localStorage.setItem("chatActivePromptName", trimmedPromptName);
+      localStorage.setItem("chatActiveSystemPromptId", promptId);
     } catch (err) {
       const errorMsg =
-        err.response?.data?.error?.message ||
-        err.message ||
-        "Failed to start session";
-      console.error("Error starting session:", err);
+        err.response?.data?.error || err.message || "Failed to start session";
       setError(`Error starting session: ${errorMsg}`);
       setSessionId(null);
-      setActivePromptName("");
+      setActiveSystemPromptId("");
       setMessages([{ role: "system", content: `Error: ${errorMsg}` }]);
       localStorage.removeItem("chatSessionId");
-      localStorage.removeItem("chatActivePromptName");
+      localStorage.removeItem("chatActiveSystemPromptId");
     } finally {
       setIsStartingSession(false);
     }
-  }, [promptNameInput]); // Dependency: promptNameInput
+  }, [systemPromptIdInput, systemPrompts]);
 
   // Function to send a message
   const sendMessage = useCallback(
     async (e) => {
-      if (e) e.preventDefault(); // Prevent default form submission if event is passed
+      if (e) e.preventDefault();
       const messageToSend = inputMessage.trim();
       if (!messageToSend || !sessionId || isLoading || isStartingSession)
         return;
@@ -84,7 +95,6 @@ const ChatInterface = () => {
       setIsLoading(true);
       setInputMessage("");
       setError(null);
-
       setMessages((prev) => [
         ...prev,
         { role: "user", content: messageToSend },
@@ -92,112 +102,133 @@ const ChatInterface = () => {
 
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/chat/message`,
+          `${API_CHAT_URL}/${activeSystemPromptId}/msg`,
           {
             sessionId,
             message: messageToSend,
-            // Optionally pass systemName if backend needs it for routing/context verification
-            // systemName: activePromptName
-          },
-          { withCredentials: true }
+          }
         );
         const { response: assistantResponse } = response.data;
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: assistantResponse || "..." }, // Handle empty response
+          { role: "assistant", content: assistantResponse || "..." },
         ]);
       } catch (err) {
         const errorMsg =
-          err.response?.data?.error?.message ||
-          err.message ||
-          "Failed to send message";
-        console.error("Error sending message:", err);
+          err.response?.data?.error || err.message || "Failed to send message";
         setError(`Error: ${errorMsg}`);
         setMessages((prev) => [
           ...prev,
           { role: "system", content: `Error sending message: ${errorMsg}` },
         ]);
-        // Optionally try to recover or suggest ending session
         if (err.response?.status === 404) {
-          // Session not found on backend
           setError("Session expired or invalid. Please start a new session.");
-          endSession(true); // Force end session UI state
+          endSession(true);
         }
       } finally {
         setIsLoading(false);
       }
     },
-    [sessionId, inputMessage, isLoading, isStartingSession, activePromptName]
-  ); // Dependencies
+    [
+      sessionId,
+      inputMessage,
+      isLoading,
+      isStartingSession,
+      activeSystemPromptId,
+    ]
+  );
 
   // Function to end the current session
   const endSession = useCallback(
     async (force = false) => {
       if (!sessionId || (isLoading && !force)) return;
 
-      setIsLoading(true); // Use general loading state
+      setIsLoading(true);
       setError(null);
 
       try {
-        // Only call backend if not forced (e.g., forced due to 404 error)
         if (!force) {
-          await axios.post(
-            `${API_BASE_URL}/chat/end`,
-            { sessionId },
-            { withCredentials: true }
-          );
+          await axios.post(`${API_CHAT_URL}/${activeSystemPromptId}/end`, {
+            sessionId,
+          });
         }
       } catch (err) {
-        // Log error but still reset UI state
-        console.error("Error ending session on backend:", err);
-        // Optionally display a less critical error message
-        // setError(`Could not cleanly end session on server: ${err.message}`);
+        console.error("Error ending session:", err);
       } finally {
         setSessionId(null);
-        setActivePromptName("");
-        setPromptNameInput(""); // Clear the input field as well
+        setActiveSystemPromptId("");
+        setSystemPromptIdInput("");
         setMessages([
           {
             role: "system",
-            content: "Session ended. Enter a prompt name to start a new chat.",
+            content:
+              "Session ended. Select a System Prompt to start a new chat.",
           },
         ]);
         localStorage.removeItem("chatSessionId");
-        localStorage.removeItem("chatActivePromptName");
+        localStorage.removeItem("chatActiveSystemPromptId");
         setIsLoading(false);
-        setIsStartingSession(false); // Ensure this is reset too
+        setIsStartingSession(false);
       }
     },
-    [sessionId, isLoading]
-  ); // Dependency: sessionId, isLoading
+    [sessionId, isLoading, activeSystemPromptId]
+  );
 
-  // Attempt to resume session on initial mount
+  // Resume session on mount
   useEffect(() => {
     const savedSessionId = localStorage.getItem("chatSessionId");
-    const savedPromptName = localStorage.getItem("chatActivePromptName");
+    const savedPromptId = localStorage.getItem("chatActiveSystemPromptId");
 
-    if (savedSessionId && savedPromptName) {
-      console.log("Attempting to resume session:", savedSessionId);
-      // TODO: Add backend validation call here if needed
-      // For now, just restore state
+    if (savedSessionId && savedPromptId) {
       setSessionId(savedSessionId);
-      setActivePromptName(savedPromptName);
+      setActiveSystemPromptId(savedPromptId);
       setMessages([
         {
           role: "system",
-          content: `Resumed session with prompt: "${savedPromptName}". Session ID: ${savedSessionId}`,
+          content: `Resuming chat session...`,
         },
       ]);
-      // Optionally fetch history here
+
+      // Fetch chat history
+      axios
+        .get(
+          `${API_CHAT_URL}/${savedPromptId}/history?sessionId=${savedSessionId}`
+        )
+        .then((response) => {
+          setMessages([
+            {
+              role: "system",
+              content: `Resumed chat session with SystemPrompt: ${
+                systemPrompts.find((p) => p._id === savedPromptId)?.name ||
+                savedPromptId
+              }`,
+            },
+            ...(response.data.messages || []),
+          ]);
+        })
+        .catch(() => {
+          // If session is invalid, clear storage and start fresh
+          localStorage.removeItem("chatSessionId");
+          localStorage.removeItem("chatActiveSystemPromptId");
+          setSessionId(null);
+          setActiveSystemPromptId("");
+          setMessages([
+            {
+              role: "system",
+              content:
+                "Previous session expired. Select a System Prompt to start a new chat.",
+            },
+          ]);
+        });
     } else {
       setMessages([
         {
           role: "system",
-          content: "Enter a system prompt name to start a chat.",
+          content: "Select a System Prompt to start a chat.",
         },
       ]);
     }
-  }, []); // Run only on mount
+  }, [systemPrompts]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -211,28 +242,33 @@ const ChatInterface = () => {
       <div className="chat-header">
         {!sessionId ? (
           <div className="system-prompt-container">
-            <input
-              type="text"
-              name="promptNameInput"
-              value={promptNameInput}
-              placeholder="System prompt name"
-              onChange={(e) => setPromptNameInput(e.target.value)}
-              disabled={isStartingSession}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") startNewSession();
-              }}
-            />
+            <select
+              name="systemPromptSelect"
+              value={systemPromptIdInput}
+              onChange={(e) => setSystemPromptIdInput(e.target.value)}
+              disabled={isStartingSession || systemPrompts.length === 0}
+            >
+              <option value="">Select a System Prompt...</option>
+              {systemPrompts.map((prompt) => (
+                <option key={prompt._id} value={prompt._id}>
+                  {prompt.name}
+                </option>
+              ))}
+            </select>
             <button
               onClick={startNewSession}
-              disabled={isStartingSession || !promptNameInput.trim()}
+              disabled={isStartingSession || !systemPromptIdInput}
             >
               {isStartingSession ? "Starting..." : "Start Chat"}
             </button>
           </div>
         ) : (
           <div className="system-prompt-container active-prompt-display">
-            <span>Active Prompt:</span>
-            <strong>{activePromptName}</strong>
+            <span>Active SystemPrompt:</span>
+            <strong>
+              {systemPrompts.find((p) => p._id === activeSystemPromptId)
+                ?.name || activeSystemPromptId}
+            </strong>
           </div>
         )}
         <button
@@ -252,18 +288,17 @@ const ChatInterface = () => {
             <div className="message-content">{message.content}</div>
           </div>
         ))}
-        {isLoading &&
-          !isStartingSession && ( // Show typing indicator only during message sending
-            <div className="message assistant">
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
+        {isLoading && !isStartingSession && (
+          <div className="message assistant">
+            <div className="message-content">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
             </div>
-          )}
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 

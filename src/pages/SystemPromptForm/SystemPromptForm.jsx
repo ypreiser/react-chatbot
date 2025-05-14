@@ -12,6 +12,7 @@ import {
 
 const getInitialPromptState = (name = "") => ({
   name: name,
+  active: "",
   identity: "",
   primaryLanguage: "",
   secondaryLanguage: "",
@@ -172,7 +173,7 @@ export default function SystemPromptForm() {
         { method, url, data: prompt, withCredentials: true },
         { withCredentials: true }
       );
-      if (response.status !== 200) {
+      if (response.status == 200) {
         setSaved(true);
         setMode("update"); // Always switch to update mode after save/create
         setPrompt(response.data); // Update state with potentially updated data from backend (like _id, timestamps)
@@ -497,6 +498,16 @@ export default function SystemPromptForm() {
                 {mode === "update" && (
                   <small className="field-note">{t.nameUpdateNote}</small>
                 )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="active">{t.activeLabel}</label>
+                <input
+                  type="checkbox"
+                  id="active"
+                  name="active"
+                  checked={prompt.active}
+                  onChange={handleFieldChange}
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="identity">{t.identityLabel}</label>

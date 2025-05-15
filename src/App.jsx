@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "./constants/api";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import ChatInterface from "./pages/ChatInterface/ChatInterface";
 import SystemPromptForm from "./pages/SystemPromptForm/SystemPromptForm";
@@ -7,6 +8,8 @@ import Header from "./components/Header/Header";
 import NotFoundPage from "./pages/NotFound/NotFound";
 import Login from "./pages/Login/LoginPage";
 import Register from "./pages/Login/RegisterPage";
+import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
+import ChatHistory from "./pages/ChatHistory/ChatHistory";
 import axios from "axios";
 
 function App() {
@@ -18,8 +21,16 @@ function App() {
     navigate("/");
   };
 
-  // Optionally, add logic to check authentication status on mount
-  // e.g., useEffect(() => { ... }, [])
+  useEffect(() => {
+    if (!user) {
+      fetch(`${API_BASE_URL}/auth/me`, { credentials: "include" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.user) setUser(data.user);
+          console.log("User data fetched:", data);
+        });
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -39,6 +50,16 @@ function App() {
           <Route path="/" element={<ChatInterface user={user} />} />
           <Route path="/system" element={<SystemPromptForm user={user} />} />
           <Route path="/whatsapp" element={<WhatsappPage user={user} />} />
+          <Route path="/admin" element={<AdminDashboard user={user} />} />
+          <Route
+            path="/chats"
+            element={
+              <ChatHistory
+                user={user}
+                isAdmin={user.privlegeLevel === "admin"}
+              />
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

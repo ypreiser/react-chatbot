@@ -4,8 +4,10 @@ import "./Header.css";
 import logo from "../../assets/logoTenLow-02.jpg";
 
 export default function Header({ user }) {
+  console.log("user in header", user);
+  console.log(user && user.privlegeLevel);
+
   const handleLogOut = () => {
-    window.confirm("Are you sure you want to log out?");
     if (window.confirm("Are you sure you want to log out?")) {
       localStorage.clear();
       document.cookie =
@@ -49,6 +51,22 @@ export default function Header({ user }) {
           >
             WhatsApp
           </NavLink>
+
+          <NavLink
+            to="/chats"
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+          >
+            Chat History
+          </NavLink>
+
+          {user.privilegeLevel === "admin" && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+            >
+              Admin Dashboard
+            </NavLink>
+          )}
 
           <NavLink
             to="/login"

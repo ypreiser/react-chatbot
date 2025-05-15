@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import "./ChatInterface.css";
-import { API_CHAT_URL } from "../../constants/api";
+import { API_BASE_URL, API_CHAT_URL } from "../../constants/api";
+
+const MAX_FILE_SIZE_MB = 10;
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "audio/mpeg",
+  "audio/wav",
+  "video/mp4",
+];
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
@@ -13,8 +26,11 @@ const ChatInterface = () => {
   const [activeSystemPromptId, setActiveSystemPromptId] = useState("");
   const [error, setError] = useState(null);
   const [systemPrompts, setSystemPrompts] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Scroll to bottom effect
   useEffect(() => {
@@ -237,6 +253,53 @@ const ChatInterface = () => {
     }
   };
 
+  // File upload handler
+  const handleFileChange = async (e) => {
+    setUploadError(null);
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      setUploadError("Invalid file type.");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setUploadError(`File too large (max ${MAX_FILE_SIZE_MB}MB).`);
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+      const { file: fileMeta } = res.data;
+      // Send a message referencing the uploaded file
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: "[File Attachment]",
+          attachments: [fileMeta],
+        },
+      ]);
+      // Optionally, send to backend as a message (implement backend support)
+      await axios.post(`${API_CHAT_URL}/${activeSystemPromptId}/msg`, {
+        sessionId,
+        message: "[File Attachment]",
+        attachments: [fileMeta],
+      });
+    } catch (err) {
+      setUploadError(
+        err.response?.data?.error || err.message || "Upload failed."
+      );
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
@@ -280,12 +343,68 @@ const ChatInterface = () => {
         </button>
       </div>
 
-      {error && <div className="error-message chat-error">{error}</div>}
+      {error && (
+        <div className="error-message chat-error">
+          {typeof error === "string"
+            ? error
+            : error?.message || JSON.stringify(error)}
+        </div>
+      )}
+      {uploadError && (
+        <div className="error-message chat-error">{uploadError}</div>
+      )}
 
       <div className="messages-container">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
             <div className="message-content">{message.content}</div>
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="attachments">
+                {message.attachments.map((att, i) => {
+                  if (att.mimeType.startsWith("image/")) {
+                    return (
+                      <img
+                        key={i}
+                        src={att.url}
+                        alt={att.originalName}
+                        className="attachment-img"
+                        style={{ maxWidth: 200, maxHeight: 200 }}
+                      />
+                    );
+                  } else if (att.mimeType.startsWith("audio/")) {
+                    return (
+                      <audio
+                        key={i}
+                        controls
+                        src={att.url}
+                        style={{ maxWidth: 200 }}
+                      />
+                    );
+                  } else if (att.mimeType.startsWith("video/")) {
+                    return (
+                      <video
+                        key={i}
+                        controls
+                        src={att.url}
+                        style={{ maxWidth: 200 }}
+                      />
+                    );
+                  } else {
+                    return (
+                      <a
+                        key={i}
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="attachment-link"
+                      >
+                        {att.originalName}
+                      </a>
+                    );
+                  }
+                })}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && !isStartingSession && (
@@ -315,6 +434,14 @@ const ChatInterface = () => {
           disabled={isLoading || isStartingSession || !sessionId}
           rows={1}
           style={{ resize: "none" }}
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          disabled={uploading || isLoading || isStartingSession || !sessionId}
+          accept={ALLOWED_FILE_TYPES.join(",")}
+          style={{ marginLeft: 8 }}
         />
         <button
           type="submit"

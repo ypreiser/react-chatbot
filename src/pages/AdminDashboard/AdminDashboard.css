@@ -1,0 +1,42 @@
+.admin-dashboard {
+  padding: 2rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+.admin-dashboard h1 {
+  margin-bottom: 1.5rem;
+}
+.user-list,
+.prompt-list {
+  margin-bottom: 2rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+th,
+td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+th {
+  background: #e9ecef;
+}
+button {
+  padding: 0.3rem 0.8rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+button:hover {
+  background: #0056b3;
+}
+.error {
+  color: #b00020;
+  margin-bottom: 1rem;
+}

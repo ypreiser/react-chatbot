@@ -34,6 +34,8 @@ const ChatInterface = () => {
 
   // Scroll to bottom effect
   useEffect(() => {
+    console.log("Messages updated:", messages);
+
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -290,6 +292,20 @@ const ChatInterface = () => {
         message: "[File Attachment]",
         attachments: [fileMeta],
       });
+      // Fetch latest chat history to ensure UI matches DB (including attachments)
+      const historyRes = await axios.get(
+        `${API_CHAT_URL}/${activeSystemPromptId}/history?sessionId=${sessionId}`
+      );
+      setMessages([
+        {
+          role: "system",
+          content: `Resumed chat session with SystemPrompt: ${
+            systemPrompts.find((p) => p._id === activeSystemPromptId)?.name ||
+            activeSystemPromptId
+          }`,
+        },
+        ...(historyRes.data.messages || []),
+      ]);
     } catch (err) {
       setUploadError(
         err.response?.data?.error || err.message || "Upload failed."
@@ -357,54 +373,107 @@ const ChatInterface = () => {
       <div className="messages-container">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.role}`}>
-            <div className="message-content">{message.content}</div>
-            {message.attachments && message.attachments.length > 0 && (
-              <div className="attachments">
-                {message.attachments.map((att, i) => {
-                  if (att.mimeType.startsWith("image/")) {
-                    return (
-                      <img
-                        key={i}
-                        src={att.url}
-                        alt={att.originalName}
-                        className="attachment-img"
-                        style={{ maxWidth: 200, maxHeight: 200 }}
-                      />
-                    );
-                  } else if (att.mimeType.startsWith("audio/")) {
-                    return (
-                      <audio
-                        key={i}
-                        controls
-                        src={att.url}
-                        style={{ maxWidth: 200 }}
-                      />
-                    );
-                  } else if (att.mimeType.startsWith("video/")) {
-                    return (
-                      <video
-                        key={i}
-                        controls
-                        src={att.url}
-                        style={{ maxWidth: 200 }}
-                      />
-                    );
-                  } else {
-                    return (
-                      <a
-                        key={i}
-                        href={att.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="attachment-link"
-                      >
-                        {att.originalName}
-                      </a>
-                    );
-                  }
-                })}
-              </div>
-            )}
+            {/* Handle multi-part content (array) or string */}
+            <div className="message-content">
+              {Array.isArray(message.content)
+                ? message.content.map((part, i) => {
+                    if (part.type === "text") {
+                      return <span key={i}>{part.text}</span>;
+                    } else if (part.type === "image") {
+                      // Find the matching attachment by mimeType and originalName
+                      const att = (message.attachments || []).find(
+                        (a) =>
+                          a.mimeType.startsWith("image/") &&
+                          (!part.filename || a.originalName === part.filename)
+                      );
+                      if (att) {
+                        return (
+                          <img
+                            key={i}
+                            src={att.url}
+                            alt={att.originalName}
+                            className="attachment-img"
+                            style={{ maxWidth: 200, maxHeight: 200 }}
+                          />
+                        );
+                      }
+                      return <span key={i}>[Image not found]</span>;
+                    } else if (part.type === "file") {
+                      // Find the matching attachment by originalName
+                      const att = (message.attachments || []).find(
+                        (a) => a.originalName === part.filename
+                      );
+                      if (att) {
+                        return (
+                          <a
+                            key={i}
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="attachment-link"
+                          >
+                            {att.originalName}
+                          </a>
+                        );
+                      }
+                      return <span key={i}>[File not found]</span>;
+                    } else {
+                      return <span key={i}>[Unsupported part]</span>;
+                    }
+                  })
+                : message.content}
+            </div>
+            {/* Fallback: show attachments if not already shown above */}
+            {message.attachments &&
+              message.attachments.length > 0 &&
+              (!Array.isArray(message.content) ||
+                message.content.length < message.attachments.length) && (
+                <div className="attachments">
+                  {message.attachments.map((att, i) => {
+                    if (att.mimeType.startsWith("image/")) {
+                      return (
+                        <img
+                          key={i}
+                          src={att.url}
+                          alt={att.originalName}
+                          className="attachment-img"
+                          style={{ maxWidth: 200, maxHeight: 200 }}
+                        />
+                      );
+                    } else if (att.mimeType.startsWith("audio/")) {
+                      return (
+                        <audio
+                          key={i}
+                          controls
+                          src={att.url}
+                          style={{ maxWidth: 200 }}
+                        />
+                      );
+                    } else if (att.mimeType.startsWith("video/")) {
+                      return (
+                        <video
+                          key={i}
+                          controls
+                          src={att.url}
+                          style={{ maxWidth: 200 }}
+                        />
+                      );
+                    } else {
+                      return (
+                        <a
+                          key={i}
+                          href={att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="attachment-link"
+                        >
+                          {att.originalName}
+                        </a>
+                      );
+                    }
+                  })}
+                </div>
+              )}
           </div>
         ))}
         {isLoading && !isStartingSession && (

@@ -1,3 +1,4 @@
+//react-chatbot2/src/pages/ChatHistory/ChatHistory.jsx
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../constants/api";
 

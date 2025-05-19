@@ -1,3 +1,4 @@
+//react-chatbot2/src/utils/stateHelpers.js
 // Utility functions for managing complex/nested state immutably
 
 /**

@@ -1,3 +1,4 @@
+//react-chatbot2/src/pages/Whatsapp/WhatsappPage.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import "./WhatsappPage.css";

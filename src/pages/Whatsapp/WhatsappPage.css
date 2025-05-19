@@ -1,4 +1,4 @@
-@import url('../../variables.css'); 
+@import url("../../variables.css");
 
 .whatsapp-container {
   max-width: 800px;
@@ -11,7 +11,7 @@
 }
 
 .whatsapp-container h1 {
-  color: var(--whatsapp-primary, #128c7e); 
+  color: var(--whatsapp-primary, #128c7e);
   text-align: center;
   margin-bottom: 2rem;
   font-weight: 600;
@@ -23,7 +23,7 @@
   margin-bottom: 2rem;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
 }
 
 .system-prompt-input,
@@ -32,15 +32,15 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   font-size: 0.95rem;
-  flex-grow: 1; 
-  min-width: 200px; 
+  flex-grow: 1;
+  min-width: 200px;
   background-color: var(--secondary-background);
 }
 .system-prompt-input:focus,
 .connection-name-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
 }
 
 .connect-button,
@@ -56,38 +56,40 @@
 }
 
 .connect-button {
-  background-color: var(--whatsapp-connect, #25d366); 
+  background-color: var(--whatsapp-connect, #25d366);
   color: white;
 }
-.connect-button:hover:not(:disabled) { background-color: var(--whatsapp-connect-hover, #128c7e); }
+.connect-button:hover:not(:disabled) {
+  background-color: var(--whatsapp-connect-hover, #128c7e);
+}
 
 .disconnect-button {
   background-color: var(--error-color);
   color: white;
 }
-.disconnect-button:hover:not(:disabled) { background-color: var(--error-hover-color); }
+.disconnect-button:hover:not(:disabled) {
+  background-color: var(--error-hover-color);
+}
 
 .connect-button:disabled,
 .disconnect-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    opacity: 0.7;
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
-
 
 .status-display-area {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: var(--secondary-background);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    min-height: 150px; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--secondary-background);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-
 
 .qr-container {
   text-align: center;
@@ -102,16 +104,16 @@
 }
 
 .qr-code {
-  max-width: 280px; 
-  border: 1px solid #ccc; 
+  max-width: 280px;
+  border: 1px solid #ccc;
   border-radius: 5px;
-  padding: 0.5rem; 
+  padding: 0.5rem;
   background-color: white;
-  display: block; 
+  display: block;
   margin: 0 auto;
 }
 
-.error-message { 
+.error-message {
   color: var(--error-color);
   background-color: var(--error-bg-color, #f8d7da);
   border: 1px solid var(--error-border-color, #f5c6cb);
@@ -126,38 +128,37 @@
   text-align: center;
   padding: 1rem;
   border-radius: var(--border-radius);
-  width: 100%; 
+  width: 100%;
 }
 
 .connection-status.connected,
 .connection-status.authenticated {
-    background-color: var(--success-bg-color, #d4edda); 
-    color: var(--success-color);
-    border: 1px solid var(--success-border-color, #c3e6cb); 
+  background-color: var(--success-bg-color, #d4edda);
+  color: var(--success-color);
+  border: 1px solid var(--success-border-color, #c3e6cb);
 }
 .connection-status.disconnected,
 .connection-status.auth_failed,
 .connection-status.failed_to_initialize,
 .connection-status.not_found {
-    background-color: var(--error-bg-color, #f8d7da);
-    color: var(--error-color);
-    border: 1px solid var(--error-border-color, #f5c6cb);
+  background-color: var(--error-bg-color, #f8d7da);
+  color: var(--error-color);
+  border: 1px solid var(--error-border-color, #f5c6cb);
 }
 .connection-status.initializing,
 .connection-status.qr_ready {
-    background-color: var(--warning-bg-color, #fff3cd); 
-    color: var(--warning-color, #856404); 
-    border: 1px solid var(--warning-border-color, #ffeeba); 
+  background-color: var(--warning-bg-color, #fff3cd);
+  color: var(--warning-color, #856404);
+  border: 1px solid var(--warning-border-color, #ffeeba);
 }
-
 
 .connection-status h2 {
   margin: 0 0 0.5rem 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: inherit; 
+  color: inherit;
 }
 .connection-status p {
-    margin: 0.3rem 0;
-    font-size: 0.95rem;
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
 }

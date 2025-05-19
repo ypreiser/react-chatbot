@@ -1,4 +1,4 @@
-// Using English as the base, add keys as needed
+//react-chatbot2/src/data/translations.js
 export const translations = {
   en: {
     title: "System Prompt Editor",

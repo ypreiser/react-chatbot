@@ -1,43 +1,57 @@
+//react-chatbot2/src/pages/ChatInterface/ChatInterface.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import "./ChatInterface.css";
-import { API_BASE_URL, API_CHAT_URL } from "../../constants/api";
+import "./ChatInterface.css"; // Assuming you have this CSS file for styling
+import { API_BASE_URL, API_CHAT_URL } from "../../constants/api"; // Ensure these constants are correct
 
-const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_MB = 20; // Increased to match backend limit
 const ALLOWED_FILE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/gif",
+  "image/webp",
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "text/csv",
   "audio/mpeg",
   "audio/wav",
+  "audio/ogg",
   "video/mp4",
+  "video/webm",
 ];
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [sessionId, setSessionId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Covers AI response loading
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [systemPromptIdInput, setSystemPromptIdInput] = useState("");
   const [activeSystemPromptId, setActiveSystemPromptId] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // General chat errors
   const [systemPrompts, setSystemPrompts] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
+  const [uploading, setUploading] = useState(false); // Specific for file upload status
+  const [uploadError, setUploadError] = useState(null); // Specific for upload errors
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   // Scroll to bottom effect
   useEffect(() => {
-    console.log("Messages updated:", messages);
+    // Use a timeout to ensure DOM updates before scrolling
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100); // A small delay
 
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    return () => clearTimeout(timer); // Clean up the timer
+  }, [messages]); // Depend on messages state changing
 
   // Focus input effect
   useEffect(() => {
@@ -69,53 +83,74 @@ const ChatInterface = () => {
       setError("Please select a System Prompt to start a new chat.");
       return;
     }
+    if (sessionId) {
+      // If a session is already active, end it gracefully before starting a new one
+      await endSession(true); // Pass true to force end without checking isLoading
+    }
+
     setIsStartingSession(true);
     setError(null);
-    setMessages([]);
+    setMessages([]); // Clear messages for a new chat
 
     try {
       const response = await axios.post(`${API_CHAT_URL}/${promptId}/start`);
       const { sessionId: newSessionId } = response.data;
       setSessionId(newSessionId);
       setActiveSystemPromptId(promptId);
+
+      // Find the prompt name for the initial system message
+      const promptName =
+        systemPrompts.find((p) => p._id === promptId)?.name || promptId;
+
       setMessages([
         {
           role: "system",
-          content: `Chat started with SystemPrompt: ${
-            systemPrompts.find((p) => p._id === promptId)?.name || promptId
-          }`,
+          content: `Chat started with SystemPrompt: ${promptName}`,
         },
       ]);
+      // Store session info in localStorage
       localStorage.setItem("chatSessionId", newSessionId);
       localStorage.setItem("chatActiveSystemPromptId", promptId);
+      console.log(
+        `New session started: ${newSessionId} with prompt: ${promptId}`
+      );
     } catch (err) {
       const errorMsg =
         err.response?.data?.error || err.message || "Failed to start session";
       setError(`Error starting session: ${errorMsg}`);
       setSessionId(null);
       setActiveSystemPromptId("");
-      setMessages([{ role: "system", content: `Error: ${errorMsg}` }]);
+      setMessages([{ role: "system", content: `Error: ${errorMsg}` }]); // Display error in chat
+      // Clean up localStorage on error
       localStorage.removeItem("chatSessionId");
       localStorage.removeItem("chatActiveSystemPromptId");
+      console.error({ err }, "Failed to start session.");
     } finally {
       setIsStartingSession(false);
+      // Focus input after session starts
+      setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [systemPromptIdInput, systemPrompts]);
+  }, [systemPromptIdInput, systemPrompts, sessionId]); // Added sessionId and endSession to dependencies
 
-  // Function to send a message
-  const sendMessage = useCallback(
-    async (e) => {
-      if (e) e.preventDefault();
-      const messageToSend = inputMessage.trim();
+  // Function to send a text message
+  const sendTextMessage = useCallback(
+    async (messageToSend) => {
       if (!messageToSend || !sessionId || isLoading || isStartingSession)
         return;
 
       setIsLoading(true);
-      setInputMessage("");
       setError(null);
+
+      // Optimistically add the user message to the UI
+      const tempMessageId = `temp-${Date.now()}`;
       setMessages((prev) => [
         ...prev,
-        { role: "user", content: messageToSend },
+        {
+          role: "user",
+          content: messageToSend,
+          status: "pending",
+          _id: tempMessageId,
+        },
       ]);
 
       try {
@@ -124,55 +159,133 @@ const ChatInterface = () => {
           {
             sessionId,
             message: messageToSend,
+            // No attachments for a text-only message
           }
         );
-        const { response: assistantResponse } = response.data;
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantResponse || "..." },
-        ]);
+
+        // Assuming the chat endpoint returns the assistant's response directly
+        const assistantResponse = response.data.text || response.data.response; // Adjust based on actual backend response structure
+
+        // Update the optimistic message status to sent and add the assistant's response
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempMessageId
+              ? { ...msg, status: "sent" } // Mark user message as sent
+              : msg
+          )
+        );
+
+        if (assistantResponse) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: assistantResponse },
+          ]);
+        } else {
+          // Handle cases where AI response might be just tool calls or empty
+          // You might want to fetch history here or handle toolCalls in UI
+          console.log(
+            "Assistant response text was empty or missing for text message."
+          );
+        }
       } catch (err) {
         const errorMsg =
-          err.response?.data?.error || err.message || "Failed to send message";
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to send message";
         setError(`Error: ${errorMsg}`);
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", content: `Error sending message: ${errorMsg}` },
-        ]);
+
+        // Update the optimistic message status to failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempMessageId
+              ? { ...msg, status: "failed", content: `${msg.content} (Failed)` }
+              : msg
+          )
+        );
+
         if (err.response?.status === 404) {
           setError("Session expired or invalid. Please start a new session.");
-          endSession(true);
+          endSession(true); // Force end session on 404
         }
+        console.error({ err }, "Failed to send text message.");
       } finally {
         setIsLoading(false);
+        // No need to fetch history here if we are handling optimistic updates + appending assistant response
+        // If backend returns full history on send, this would be different.
+        // For now, assume backend just returns the AI's direct reply.
+      }
+    },
+    [sessionId, isLoading, isStartingSession, activeSystemPromptId]
+  );
+
+  // Combined send handler for text and attachments
+  const handleSendMessage = useCallback(
+    (e) => {
+      if (e) e.preventDefault();
+      const messageToSend = inputMessage.trim();
+
+      if (
+        !messageToSend &&
+        (!fileInputRef.current?.files ||
+          fileInputRef.current.files.length === 0)
+      ) {
+        // Don't send if no text and no files selected
+        return;
+      }
+      if (!sessionId || isLoading || isStartingSession || uploading) {
+        // Don't send if session not active or busy
+        return;
+      }
+
+      if (fileInputRef.current?.files?.length > 0) {
+        // If files are selected, handle upload first
+        // The file upload handler will take care of sending the message after upload
+        handleFileChange({ target: fileInputRef.current }); // Pass file input ref to handler
+        setInputMessage(""); // Clear text input immediately
+      } else if (messageToSend) {
+        // If only text, send text message directly
+        sendTextMessage(messageToSend);
+        setInputMessage(""); // Clear text input after sending
       }
     },
     [
-      sessionId,
       inputMessage,
+      sessionId,
       isLoading,
       isStartingSession,
-      activeSystemPromptId,
+      uploading,
+      sendTextMessage,
     ]
   );
 
   // Function to end the current session
   const endSession = useCallback(
     async (force = false) => {
-      if (!sessionId || (isLoading && !force)) return;
+      if (!sessionId || (isLoading && !force && !uploading)) {
+        // Only allow ending if session exists AND (not loading or explicitly forced)
+        // Added check for `uploading` to prevent ending during upload unless forced
+        return;
+      }
 
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true); // Indicate loading state during session end
+      setError(null); // Clear any errors
 
       try {
+        // Only make the API call if not forced (e.g., forced by 404 error)
         if (!force) {
           await axios.post(`${API_CHAT_URL}/${activeSystemPromptId}/end`, {
             sessionId,
           });
+          console.log(`Session end API call successful for ${sessionId}`);
+        } else {
+          console.log(`Force ending session ${sessionId}, skipping API call.`);
         }
       } catch (err) {
         console.error("Error ending session:", err);
+        // Log the error but don't necessarily display it to the user if it's just failing to inform the backend of an already broken session.
+        // You might want more sophisticated error handling here.
       } finally {
+        // Always reset state regardless of API call success/failure if we are ending the session
         setSessionId(null);
         setActiveSystemPromptId("");
         setSystemPromptIdInput("");
@@ -183,13 +296,42 @@ const ChatInterface = () => {
               "Session ended. Select a System Prompt to start a new chat.",
           },
         ]);
+        // Clean up localStorage
         localStorage.removeItem("chatSessionId");
         localStorage.removeItem("chatActiveSystemPromptId");
-        setIsLoading(false);
-        setIsStartingSession(false);
+
+        setIsLoading(false); // Turn off loading state
+        setIsStartingSession(false); // Ensure this is also false
+        setUploading(false); // Ensure uploading state is reset
+        setUploadError(null); // Clear any pending upload errors
+
+        // Reset file input value so same file can be selected again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        // Focus system prompt select or input after ending
+        setTimeout(() => {
+          if (systemPrompts.length > 0) {
+            // Focus the select if prompts are available
+            const selectElement = document.querySelector(
+              ".system-prompt-container select"
+            );
+            if (selectElement) selectElement.focus();
+          } else {
+            // Fallback focus (less likely)
+            inputRef.current?.focus();
+          }
+        }, 0);
       }
     },
-    [sessionId, isLoading, activeSystemPromptId]
+    [
+      sessionId,
+      isLoading,
+      isStartingSession,
+      activeSystemPromptId,
+      uploading,
+      systemPrompts,
+    ] // Added dependencies
   );
 
   // Resume session on mount
@@ -200,10 +342,11 @@ const ChatInterface = () => {
     if (savedSessionId && savedPromptId) {
       setSessionId(savedSessionId);
       setActiveSystemPromptId(savedPromptId);
+      // Set initial message state to indicate resuming
       setMessages([
         {
           role: "system",
-          content: `Resuming chat session...`,
+          content: `Attempting to resume chat session...`,
         },
       ]);
 
@@ -213,19 +356,24 @@ const ChatInterface = () => {
           `${API_CHAT_URL}/${savedPromptId}/history?sessionId=${savedSessionId}`
         )
         .then((response) => {
+          // Find the prompt name for the system message
+          const promptName =
+            systemPrompts.find((p) => p._id === savedPromptId)?.name ||
+            savedPromptId;
+
           setMessages([
             {
               role: "system",
-              content: `Resumed chat session with SystemPrompt: ${
-                systemPrompts.find((p) => p._id === savedPromptId)?.name ||
-                savedPromptId
-              }`,
+              content: `Resumed chat session with SystemPrompt: ${promptName}`,
             },
-            ...(response.data.messages || []),
+            ...(response.data.messages || []), // Append historical messages
           ]);
+          console.log(`Resumed session ${savedSessionId} and loaded history.`);
         })
-        .catch(() => {
-          // If session is invalid, clear storage and start fresh
+        .catch((err) => {
+          console.error("Failed to fetch chat history:", err);
+
+          // If fetching history fails, assume session is invalid
           localStorage.removeItem("chatSessionId");
           localStorage.removeItem("chatActiveSystemPromptId");
           setSessionId(null);
@@ -234,85 +382,237 @@ const ChatInterface = () => {
             {
               role: "system",
               content:
-                "Previous session expired. Select a System Prompt to start a new chat.",
+                "Previous session expired or history unavailable. Please start a new chat.",
             },
           ]);
+          // Focus system prompt select after failure
+          setTimeout(() => {
+            const selectElement = document.querySelector(
+              ".system-prompt-container select"
+            );
+            if (selectElement) selectElement.focus();
+          }, 0);
         });
     } else {
+      // No saved session, display initial message
       setMessages([
         {
           role: "system",
           content: "Select a System Prompt to start a chat.",
         },
       ]);
+      // Focus system prompt select
+      setTimeout(() => {
+        const selectElement = document.querySelector(
+          ".system-prompt-container select"
+        );
+        if (selectElement) selectElement.focus();
+      }, 0);
     }
-  }, [systemPrompts]);
+  }, [systemPrompts]); // Added systemPrompts to dependency array
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  // File upload handler - now ONLY handles the upload and subsequent message send
+  const handleFileChange = useCallback(
+    async (e) => {
+      setUploadError(null);
+      const file = e.target.files[0]; // Get the selected file
+      if (!file) {
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Clear input if selection was cancelled
+        return;
+      }
 
-  // File upload handler
-  const handleFileChange = async (e) => {
-    setUploadError(null);
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      setUploadError("Invalid file type.");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setUploadError(`File too large (max ${MAX_FILE_SIZE_MB}MB).`);
-      return;
-    }
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
-      const { file: fileMeta } = res.data;
-      // Send a message referencing the uploaded file
+      // --- Frontend Validation ---
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        setUploadError(
+          `Invalid file type: ${
+            file.type
+          }. Allowed types are: ${ALLOWED_FILE_TYPES.join(", ")}.`
+        );
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input on error
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        setUploadError(
+          `File too large (${(file.size / (1024 * 1024)).toFixed(
+            2
+          )}MB). Max size is ${MAX_FILE_SIZE_MB}MB.`
+        );
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input on error
+        return;
+      }
+      if (!sessionId) {
+        setUploadError("Start a chat session before uploading files.");
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input
+        return;
+      }
+      // --- End Frontend Validation ---
+
+      setUploading(true); // Indicate upload is in progress
+      setIsLoading(true); // Indicate overall processing is happening
+      setError(null); // Clear any previous general chat errors
+
+      // Optimistically add a pending message to the UI
+      const tempMessageId = `temp-${Date.now()}`;
+      // Create optimistic attachment data without the final URL yet
+      const optimisticAttachment = {
+        originalName: file.name, // Use file.name directly from File object
+        mimeType: file.type, // Use file.type directly from File object
+        size: file.size, // Use file.size directly from File object
+        // url will be added after upload response
+      };
+
+      // Add the optimistic message to the state
       setMessages((prev) => [
         ...prev,
         {
           role: "user",
-          content: "[File Attachment]",
-          attachments: [fileMeta],
+          content: `Uploading ${file.name}...`, // Placeholder content during upload
+          attachments: [optimisticAttachment], // Store initial metadata
+          status: "pending_upload", // Custom status for upload in progress
+          _id: tempMessageId, // Add temporary ID for easy update/removal
         },
       ]);
-      // Optionally, send to backend as a message (implement backend support)
-      await axios.post(`${API_CHAT_URL}/${activeSystemPromptId}/msg`, {
-        sessionId,
-        message: "[File Attachment]",
-        attachments: [fileMeta],
-      });
-      // Fetch latest chat history to ensure UI matches DB (including attachments)
-      const historyRes = await axios.get(
-        `${API_CHAT_URL}/${activeSystemPromptId}/history?sessionId=${sessionId}`
-      );
-      setMessages([
-        {
-          role: "system",
-          content: `Resumed chat session with SystemPrompt: ${
-            systemPrompts.find((p) => p._id === activeSystemPromptId)?.name ||
-            activeSystemPromptId
-          }`,
-        },
-        ...(historyRes.data.messages || []),
-      ]);
-    } catch (err) {
-      setUploadError(
-        err.response?.data?.error || err.message || "Upload failed."
-      );
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      try {
+        // --- Step 1: Upload file to Cloudinary ---
+        const formData = new FormData();
+        formData.append("file", file); // 'file' should match the field name in upload.single('file')
+
+        console.log(`Uploading file to ${API_BASE_URL}/upload`);
+        const uploadRes = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true, // Ensure cookies/auth are sent
+        });
+        console.log("uploadRes", uploadRes.data);
+
+        // Assumes /api/upload returns a JSON object like { url, originalName, mimeType, size }
+        const cloudinaryFileMeta = uploadRes.data.file; // This should contain the Cloudinary URL
+        console.log("Cloudinary upload response url:", cloudinaryFileMeta.url);
+
+        if (!cloudinaryFileMeta || !cloudinaryFileMeta.url) {
+          throw new Error(
+            "Cloudinary upload successful but missing URL in response."
+          );
+        }
+        console.log("Cloudinary upload successful.");
+
+        // --- Step 2: Send message payload to chat endpoint with Cloudinary URL ---
+        // Construct the content part(s) for the message payload sent to the backend
+        const messageContentParts = [];
+        // Optionally include the current text input value if you want to send text + file together
+        // For this simple flow, we are sending an attachment-only message
+        // if (inputMessage.trim()) {
+        //    messageContentParts.push({ type: "text", text: inputMessage.trim() });
+        // }
+
+        // Add the file/image part using the Cloudinary URL
+        const attachmentContentType = cloudinaryFileMeta.mimeType.startsWith(
+          "image/"
+        )
+          ? "image"
+          : "file";
+        if (attachmentContentType === "image") {
+          messageContentParts.push({
+            type: "image",
+            image: cloudinaryFileMeta.url, // Pass the Cloudinary URL
+            mimeType: cloudinaryFileMeta.mimeType,
+            filename: cloudinaryFileMeta.originalName, // Include filename in part for backend/AI
+          });
+        } else {
+          messageContentParts.push({
+            type: "file",
+            mimeType: cloudinaryFileMeta.mimeType,
+            data: cloudinaryFileMeta.url, // Pass the Cloudinary URL
+            filename: cloudinaryFileMeta.originalName, // Include filename in part for backend/AI
+          });
+        }
+
+        // If no text input, use a placeholder or leave message field empty if backend handles it
+        const messageTextPayload = inputMessage.trim() || "[File Attachment]";
+
+        console.log(
+          `Sending message to ${API_CHAT_URL}/${activeSystemPromptId}/msg`,
+          {
+            sessionId,
+            message: messageTextPayload, // Use placeholder or combined text
+            attachments: messageContentParts, // Send the attachment metadata with the Cloudinary URL
+          }
+        );
+        const chatResponse = await axios.post(
+          `${API_CHAT_URL}/${activeSystemPromptId}/msg`,
+          {
+            sessionId,
+            message: messageTextPayload, // Use placeholder or combined text
+            // Send the attachment metadata with the Cloudinary URL
+            attachments: [cloudinaryFileMeta], // Ensure this is the array format expected by backend
+            // Send the AI SDK compatible content structure directly if backend expects it,
+            // or let the backend construct it from message/attachments.
+            // Based on backend code, sending `message` and `attachments` is correct.
+          }
+        );
+        console.log("Message sent successfully to chat endpoint.");
+
+        // --- Step 3: Fetch full history to update UI ---
+        // This is the simplest way to get the final state including AI response
+        console.log(`Fetching updated chat history for session ${sessionId}`);
+        const historyRes = await axios.get(
+          `${API_CHAT_URL}/${activeSystemPromptId}/history?sessionId=${sessionId}`
+        );
+        console.log("Chat history fetched successfully.");
+
+        // Replace existing messages with fetched history (This will include the user's message with correct content structure and the AI's reply)
+        const promptName =
+          systemPrompts.find((p) => p._id === activeSystemPromptId)?.name ||
+          activeSystemPromptId;
+        setMessages([
+          {
+            role: "system",
+            content: `Resumed chat session with SystemPrompt: ${promptName}`,
+          },
+          ...(historyRes.data.messages || []),
+        ]);
+      } catch (err) {
+        console.error({ err }, "File upload or message send failed.");
+        const errorMsg =
+          err.response?.data?.message ||
+          err.message ||
+          "Upload or message send failed.";
+        setUploadError(errorMsg);
+
+        // Find the optimistic message and update its status to failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempMessageId
+              ? {
+                  ...msg,
+                  status: "failed",
+                  content: `${msg.content} (Failed: ${errorMsg})`,
+                }
+              : msg
+          )
+        );
+      } finally {
+        setUploading(false); // Uploading finished
+        setIsLoading(false); // Overall processing finished
+        if (fileInputRef.current) fileInputRef.current.value = ""; // Clear file input value
+        setInputMessage(""); // Clear text input field
+        // Focus input after processing
+        setTimeout(() => inputRef.current?.focus(), 0);
+      }
+    },
+    [
+      sessionId,
+      activeSystemPromptId,
+      isLoading,
+      isStartingSession,
+      systemPrompts,
+    ]
+  ); // Added dependencies
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(); // Use the combined handler
     }
   };
 
@@ -325,7 +625,12 @@ const ChatInterface = () => {
               name="systemPromptSelect"
               value={systemPromptIdInput}
               onChange={(e) => setSystemPromptIdInput(e.target.value)}
-              disabled={isStartingSession || systemPrompts.length === 0}
+              disabled={
+                isStartingSession ||
+                systemPrompts.length === 0 ||
+                isLoading ||
+                uploading
+              } // Disable if busy
             >
               <option value="">Select a System Prompt...</option>
               {systemPrompts.map((prompt) => (
@@ -336,7 +641,12 @@ const ChatInterface = () => {
             </select>
             <button
               onClick={startNewSession}
-              disabled={isStartingSession || !systemPromptIdInput}
+              disabled={
+                isStartingSession ||
+                !systemPromptIdInput ||
+                isLoading ||
+                uploading
+              } // Disable if busy
             >
               {isStartingSession ? "Starting..." : "Start Chat"}
             </button>
@@ -353,7 +663,7 @@ const ChatInterface = () => {
         <button
           onClick={() => endSession()}
           className="end-session-btn"
-          disabled={!sessionId || isLoading || isStartingSession}
+          disabled={!sessionId || isLoading || isStartingSession || uploading} // Disable if busy
         >
           End Session
         </button>
@@ -367,130 +677,110 @@ const ChatInterface = () => {
         </div>
       )}
       {uploadError && (
-        <div className="error-message chat-error">{uploadError}</div>
+        <div className="error-message chat-upload-error">{uploadError}</div> // Different class for upload errors
       )}
 
       <div className="messages-container">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.role}`}>
+          <div key={message._id || index} className={`message ${message.role}`}>
+            {" "}
+            {/* Use _id for key if available */}
             {/* Handle multi-part content (array) or string */}
             <div className="message-content">
               {Array.isArray(message.content)
                 ? message.content.map((part, i) => {
                     if (part.type === "text") {
                       return <span key={i}>{part.text}</span>;
-                    } else if (part.type === "image") {
-                      // Find the matching attachment by mimeType and originalName
-                      const att = (message.attachments || []).find(
-                        (a) =>
-                          a.mimeType.startsWith("image/") &&
-                          (!part.filename || a.originalName === part.filename)
-                      );
-                      if (att) {
-                        return (
-                          <img
-                            key={i}
-                            src={att.url}
-                            alt={att.originalName}
-                            className="attachment-img"
-                            style={{ maxWidth: 200, maxHeight: 200 }}
-                          />
-                        );
-                      }
-                      return <span key={i}>[Image not found]</span>;
-                    } else if (part.type === "file") {
-                      // Find the matching attachment by originalName
-                      const att = (message.attachments || []).find(
-                        (a) => a.originalName === part.filename
-                      );
-                      if (att) {
-                        return (
-                          <a
-                            key={i}
-                            href={att.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="attachment-link"
-                          >
-                            {att.originalName}
-                          </a>
-                        );
-                      }
-                      return <span key={i}>[File not found]</span>;
-                    } else {
-                      return <span key={i}>[Unsupported part]</span>;
-                    }
-                  })
-                : message.content}
-            </div>
-            {/* Fallback: show attachments if not already shown above */}
-            {message.attachments &&
-              message.attachments.length > 0 &&
-              (!Array.isArray(message.content) ||
-                message.content.length < message.attachments.length) && (
-                <div className="attachments">
-                  {message.attachments.map((att, i) => {
-                    if (att.mimeType.startsWith("image/")) {
+                    } else if (
+                      part.type === "image" &&
+                      typeof part.image === "string"
+                    ) {
+                      // Check for URL string
+                      // Use part.image directly as it should be the URL from the AI SDK structure
                       return (
                         <img
                           key={i}
-                          src={att.url}
-                          alt={att.originalName}
+                          src={part.image}
+                          alt={
+                            part.filename ||
+                            part.originalName ||
+                            "attached image"
+                          } // Use filename/originalName from part/attachment
                           className="attachment-img"
-                          style={{ maxWidth: 200, maxHeight: 200 }}
+                          style={{ maxWidth: 250, maxHeight: 250 }} // Add styles or CSS class
                         />
                       );
-                    } else if (att.mimeType.startsWith("audio/")) {
-                      return (
-                        <audio
-                          key={i}
-                          controls
-                          src={att.url}
-                          style={{ maxWidth: 200 }}
-                        />
-                      );
-                    } else if (att.mimeType.startsWith("video/")) {
-                      return (
-                        <video
-                          key={i}
-                          controls
-                          src={att.url}
-                          style={{ maxWidth: 200 }}
-                        />
-                      );
-                    } else {
+                    } else if (
+                      part.type === "file" &&
+                      typeof part.data === "string"
+                    ) {
+                      // Check for URL string
+                      // Use part.data directly as it should be the URL from the AI SDK structure
                       return (
                         <a
                           key={i}
-                          href={att.url}
+                          href={part.data}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="attachment-link"
+                          className="attachment-link" // Add CSS class
+                          download={part.filename} // Suggest download filename
                         >
-                          {att.originalName}
+                          {part.filename ||
+                            part.originalName ||
+                            "Attached File"}{" "}
+                          {/* Use filename/originalName from part/attachment */}
                         </a>
                       );
+                    } else {
+                      // Render placeholder for unsupported or malformed parts
+                      const attName =
+                        part.filename || part.originalName || "unknown file";
+                      return (
+                        <span key={i}>
+                          [Unsupported or invalid part: {attName}]
+                        </span>
+                      );
                     }
-                  })}
-                </div>
-              )}
+                  })
+                : message.content}{" "}
+              {/* Render as string if not an array */}
+              {/* Display status for pending/failed messages */}
+              {message.status &&
+                (message.status === "pending_upload" ||
+                  message.status === "pending" ||
+                  message.status === "failed") && (
+                  <span
+                    className={`message-status ${message.status.replace(
+                      "_",
+                      "-"
+                    )}`}
+                  >
+                    {" "}
+                    ({message.status.replace("_", " ")})
+                  </span>
+                )}
+            </div>
+            {/* Removed the secondary attachments loop - Content field is the source of truth */}
           </div>
         ))}
-        {isLoading && !isStartingSession && (
-          <div className="message assistant">
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+        {(isLoading || uploading) &&
+          !isStartingSession && ( // Show typing indicator if loading or uploading
+            <div className="message assistant">
+              <div className="message-content">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={sendMessage} className="input-form">
+      <form onSubmit={handleSendMessage} className="input-form">
+        {" "}
+        {/* Use combined handler */}
         <textarea
           id="input-message"
           ref={inputRef}
@@ -498,24 +788,45 @@ const ChatInterface = () => {
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
-            sessionId ? "Type your message..." : "Start a session first..."
+            sessionId
+              ? uploading
+                ? "Uploading file..."
+                : "Type your message or attach a file..."
+              : "Start a session first..."
           }
-          disabled={isLoading || isStartingSession || !sessionId}
+          disabled={isLoading || isStartingSession || !sessionId || uploading} // Disable if busy
           rows={1}
           style={{ resize: "none" }}
         />
+        {/* File input hidden, triggered by a button/icon */}
         <input
           type="file"
           ref={fileInputRef}
-          onChange={handleFileChange}
-          disabled={uploading || isLoading || isStartingSession || !sessionId}
+          onChange={handleFileChange} // File selection directly triggers handleFileChange
+          disabled={uploading || isLoading || isStartingSession || !sessionId} // Disable if busy
           accept={ALLOWED_FILE_TYPES.join(",")}
-          style={{ marginLeft: 8 }}
+          style={{ display: "none" }} // Hide the default file input
         />
+        {/* Button/Icon to trigger file input */}
+        <button
+          type="button" // Important: type="button" to prevent form submission
+          onClick={() => fileInputRef.current?.click()} // Trigger hidden input click
+          disabled={uploading || isLoading || isStartingSession || !sessionId} // Disable if busy
+          className="attach-button"
+        >
+          {/* You can replace this with an icon */}
+          📎
+        </button>
         <button
           type="submit"
           disabled={
-            isLoading || isStartingSession || !inputMessage.trim() || !sessionId
+            isLoading ||
+            isStartingSession ||
+            (!inputMessage.trim() &&
+              (!fileInputRef.current?.files ||
+                fileInputRef.current.files.length === 0)) ||
+            !sessionId ||
+            uploading // Disable if no input, no files, or busy
           }
         >
           Send

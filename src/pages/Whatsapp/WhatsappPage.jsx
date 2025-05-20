@@ -18,6 +18,9 @@ const WhatsappPage = () => {
   const [isLoading, setIsLoading] = useState(false); // General loading state (connect/disconnect)
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [systemPrompts, setSystemPrompts] = useState([]); // List of system prompts
+  const [userConnections, setUserConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionsError, setConnectionsError] = useState(null);
 
   // Refs for intervals to ensure they are cleared properly
   const statusIntervalRef = useRef(null);
@@ -211,6 +214,30 @@ const WhatsappPage = () => {
     fetchPrompts();
   }, []);
 
+  // Fetch user's WhatsApp connections on mount
+  useEffect(() => {
+    async function fetchConnections() {
+      setConnectionsLoading(true);
+      setConnectionsError(null);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/whatsapp/connections`, {
+          withCredentials: true,
+        });
+        setUserConnections(res.data.connections || []);
+      } catch (err) {
+        setConnectionsError(
+          err.response?.data?.error?.message ||
+            err.message ||
+            "Failed to fetch WhatsApp connections."
+        );
+        setUserConnections([]);
+      } finally {
+        setConnectionsLoading(false);
+      }
+    }
+    fetchConnections();
+  }, []);
+
   // Connect Function
   const connectWhatsApp = async () => {
     const nameToConnect = connectionNameInput.trim();
@@ -308,6 +335,59 @@ const WhatsappPage = () => {
   return (
     <div className="whatsapp-container">
       <h1>WhatsApp Connection</h1>
+
+      {/* User Connections List */}
+      <div className="whatsapp-connections-list-area">
+        <h2>Your WhatsApp Connections</h2>
+        {connectionsLoading ? (
+          <div className="connections-loading">Loading connections...</div>
+        ) : connectionsError ? (
+          <div className="connections-error">{connectionsError}</div>
+        ) : userConnections.length === 0 ? (
+          <div className="connections-empty">
+            No WhatsApp connections found.
+          </div>
+        ) : (
+          <table className="whatsapp-connections-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>System Prompt</th>
+                <th>Status</th>
+                <th>Last Connected</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userConnections.map((conn) => (
+                <tr key={conn._id || conn.connectionName}>
+                  <td>{conn.connectionName}</td>
+                  <td>{conn.systemPromptName}</td>
+                  <td>
+                    <span
+                      className={`status-badge status-${
+                        conn.lastKnownStatus || "unknown"
+                      }`}
+                    >
+                      {conn.lastKnownStatus || "unknown"}
+                    </span>
+                  </td>
+                  <td>
+                    {conn.lastConnectedAt
+                      ? new Date(conn.lastConnectedAt).toLocaleString()
+                      : "-"}
+                  </td>
+                  <td>
+                    {conn.createdAt
+                      ? new Date(conn.createdAt).toLocaleString()
+                      : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className="connection-controls">
         <input

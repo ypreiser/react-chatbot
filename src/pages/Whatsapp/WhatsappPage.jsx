@@ -289,16 +289,16 @@ const WhatsappPage = () => {
   };
 
   // Disconnect Function
-  const disconnectWhatsApp = async (silent = false) => {
-    if (!activeConnectionName) {
+  const disconnectWhatsApp = async (connName = null, silent = false) => {
+    const nameToDisconnect = connName || activeConnectionName;
+    if (!nameToDisconnect) {
       if (!silent) console.log("No active connection to disconnect.");
       return;
     }
 
-    const nameToDisconnect = activeConnectionName; // Capture name before state changes
     if (!silent) setIsLoading(true);
     if (!silent) setError(null);
-    clearTimers(); // Stop polling immediately
+    if (!connName) clearTimers(); // Only clear timers if disconnecting the active connection
 
     try {
       console.log(`Disconnecting ${nameToDisconnect}...`);
@@ -317,14 +317,14 @@ const WhatsappPage = () => {
       if (!silent) setError(`Disconnection Error: ${errorMsg}`);
       // Continue with UI cleanup even if backend call fails
     } finally {
-      // Reset state fully only if not silent (i.e., user initiated)
-      if (!silent) {
+      // Reset state fully only if not silent (i.e., user initiated) and if disconnecting the active connection
+      if (!silent && (!connName || nameToDisconnect === activeConnectionName)) {
         setActiveConnectionName(null);
         setConnectionStatus(null);
         setQrCodeDataUrl(null);
         setIsLoading(false);
-        setConnectionNameInput(""); // Clear input only on manual disconnect
-        setSystemPromptName(""); // Clear prompt name as well
+        setConnectionNameInput("");
+        setSystemPromptName("");
       }
     }
   };
@@ -388,8 +388,10 @@ const WhatsappPage = () => {
                   <td>
                     <button
                       className="disconnect-button"
-                      disabled={isLoading}
-                      onClick={() => disconnectWhatsApp()}
+                      disabled={
+                        isLoading || conn.lastKnownStatus !== "connected"
+                      }
+                      onClick={() => disconnectWhatsApp(conn.connectionName)}
                     >
                       {isLoading && activeConnectionName === conn.connectionName
                         ? "Disconnecting..."

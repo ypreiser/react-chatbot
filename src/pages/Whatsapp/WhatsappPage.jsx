@@ -354,8 +354,10 @@ const WhatsappPage = () => {
                 <th>Name</th>
                 <th>System Prompt</th>
                 <th>Status</th>
+                <th>Phone Number</th>
                 <th>Last Connected</th>
                 <th>Created</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -372,6 +374,7 @@ const WhatsappPage = () => {
                       {conn.lastKnownStatus || "unknown"}
                     </span>
                   </td>
+                  <td>{conn.phoneNumber || "-"}</td>
                   <td>
                     {conn.lastConnectedAt
                       ? new Date(conn.lastConnectedAt).toLocaleString()
@@ -381,6 +384,17 @@ const WhatsappPage = () => {
                     {conn.createdAt
                       ? new Date(conn.createdAt).toLocaleString()
                       : "-"}
+                  </td>
+                  <td>
+                    <button
+                      className="disconnect-button"
+                      disabled={isLoading}
+                      onClick={() => disconnectWhatsApp()}
+                    >
+                      {isLoading && activeConnectionName === conn.connectionName
+                        ? "Disconnecting..."
+                        : `Disconnect ${conn.connectionName}`}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -427,15 +441,6 @@ const WhatsappPage = () => {
           }
         >
           {isLoading ? "Connecting..." : "Connect"}
-        </button>
-        <button
-          onClick={() => disconnectWhatsApp()}
-          className="disconnect-button"
-          disabled={isLoading || !activeConnectionName}
-        >
-          {isLoading
-            ? "Disconnecting..."
-            : `Disconnect ${activeConnectionName || ""}`}
         </button>
       </div>
 

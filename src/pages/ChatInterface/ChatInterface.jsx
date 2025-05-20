@@ -683,9 +683,7 @@ const ChatInterface = () => {
       <div className="messages-container">
         {messages.map((message, index) => (
           <div key={message._id || index} className={`message ${message.role}`}>
-            {" "}
-            {/* Use _id for key if available */}
-            {/* Handle multi-part content (array) or string */}
+            {/* Chat bubble content */}
             <div className="message-content">
               {Array.isArray(message.content)
                 ? message.content.map((part, i) => {
@@ -695,8 +693,6 @@ const ChatInterface = () => {
                       part.type === "image" &&
                       typeof part.image === "string"
                     ) {
-                      // Check for URL string
-                      // Use part.image directly as it should be the URL from the AI SDK structure
                       return (
                         <img
                           key={i}
@@ -705,34 +701,30 @@ const ChatInterface = () => {
                             part.filename ||
                             part.originalName ||
                             "attached image"
-                          } // Use filename/originalName from part/attachment
+                          }
                           className="attachment-img"
-                          style={{ maxWidth: 250, maxHeight: 250 }} // Add styles or CSS class
+                          style={{ maxWidth: 250, maxHeight: 250 }}
                         />
                       );
                     } else if (
                       part.type === "file" &&
                       typeof part.data === "string"
                     ) {
-                      // Check for URL string
-                      // Use part.data directly as it should be the URL from the AI SDK structure
                       return (
                         <a
                           key={i}
                           href={part.data}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="attachment-link" // Add CSS class
-                          download={part.filename} // Suggest download filename
+                          className="attachment-link"
+                          download={part.filename}
                         >
                           {part.filename ||
                             part.originalName ||
-                            "Attached File"}{" "}
-                          {/* Use filename/originalName from part/attachment */}
+                            "Attached File"}
                         </a>
                       );
                     } else {
-                      // Render placeholder for unsupported or malformed parts
                       const attName =
                         part.filename || part.originalName || "unknown file";
                       return (
@@ -742,8 +734,7 @@ const ChatInterface = () => {
                       );
                     }
                   })
-                : message.content}{" "}
-              {/* Render as string if not an array */}
+                : message.content}
               {/* Display status for pending/failed messages */}
               {message.status &&
                 (message.status === "pending_upload" ||
@@ -760,21 +751,19 @@ const ChatInterface = () => {
                   </span>
                 )}
             </div>
-            {/* Removed the secondary attachments loop - Content field is the source of truth */}
           </div>
         ))}
-        {(isLoading || uploading) &&
-          !isStartingSession && ( // Show typing indicator if loading or uploading
-            <div className="message assistant">
-              <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
+        {(isLoading || uploading) && !isStartingSession && (
+          <div className="message assistant">
+            <div className="message-content">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
             </div>
-          )}
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 

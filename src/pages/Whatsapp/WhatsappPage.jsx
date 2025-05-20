@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import "./WhatsappPage.css";
-import { API_BASE_URL } from "../../constants/api";
+import { API_BASE_URL, API_CHAT_URL } from "../../constants/api";
 
 const STATUS_CHECK_INTERVAL = 10000; // Check status every 10 seconds
 const QR_RETRY_INTERVAL = 10000; // Retry QR code fetch every 10 seconds
@@ -17,6 +17,7 @@ const WhatsappPage = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // General loading state (connect/disconnect)
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [systemPrompts, setSystemPrompts] = useState([]); // List of system prompts
 
   // Refs for intervals to ensure they are cleared properly
   const statusIntervalRef = useRef(null);
@@ -194,6 +195,22 @@ const WhatsappPage = () => {
     };
   }, [activeConnectionName]); // Rerun when activeConnectionName changes
 
+  // Fetch all active system prompts on mount
+  useEffect(() => {
+    async function fetchPrompts() {
+      try {
+        const response = await axios.get(`${API_CHAT_URL}/prompts`);
+        setSystemPrompts(response.data || []);
+      } catch (err) {
+        const errorMsg =
+          err.response?.data?.error || err.message || "Failed to fetch prompts";
+        setError(errorMsg);
+        setSystemPrompts([]);
+      }
+    }
+    fetchPrompts();
+  }, []);
+
   // Connect Function
   const connectWhatsApp = async () => {
     const nameToConnect = connectionNameInput.trim();
@@ -301,14 +318,24 @@ const WhatsappPage = () => {
           className="connection-name-input"
           disabled={isLoading || activeConnectionName} // Disable if loading or connected
         />
-        <input
-          type="text"
-          value={systemPromptName}
-          onChange={(e) => setSystemPromptName(e.target.value)}
-          placeholder="System prompt name"
-          className="system-prompt-input"
-          disabled={isLoading || activeConnectionName} // Disable if loading or connected
-        />
+        <div className="system-prompt-dropdown-container">
+          <select
+            value={systemPromptName}
+            onChange={(e) => setSystemPromptName(e.target.value)}
+            className="system-prompt-input"
+            disabled={isLoading || activeConnectionName} // Disable if loading or connected
+          >
+            <option value="">Select a System Prompt</option>
+            {systemPrompts.map((prompt) => (
+              <option
+                key={prompt._id || prompt.id || prompt.name}
+                value={prompt._id || prompt.id || prompt.name}
+              >
+                {prompt.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
           onClick={connectWhatsApp}
           className="connect-button"

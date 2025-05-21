@@ -1,0 +1,118 @@
+.chatListPanel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  padding: 1rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+.tableContainer::-webkit-scrollbar {
+  height: 10px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+  background: #a0aec0;
+  border-radius: 10px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* For Firefox */
+.tableContainer {
+  scrollbar-width: auto;
+  scrollbar-color: #a0aec0 #e2e8f0;
+}
+
+.chatListPanel table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.chatListPanel th,
+.chatListPanel td {
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Specific column nowrap */
+.chatListPanel th:nth-child(1),
+.chatListPanel td:nth-child(1),
+.chatListPanel th:nth-child(6),
+.chatListPanel td:nth-child(6),
+.chatListPanel th:nth-child(7),
+.chatListPanel td:nth-child(7) {
+  white-space: nowrap;
+}
+
+/* Columns that allow text overflow ellipsis */
+.chatListPanel th:nth-child(3),
+.chatListPanel td:nth-child(3),
+.chatListPanel th:nth-child(4),
+.chatListPanel td:nth-child(4) {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatListPanel th {
+  background: #f1f5f9;
+  color: #4a5568;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chatListPanel tr {
+  transition: background 0.2s;
+}
+
+.chatListPanel tr.selectedRow {
+  background: #e6f7ff;
+}
+
+.chatListPanel tr:hover {
+  background: #f0f4fa;
+}
+
+.viewButton {
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.viewButton:hover {
+  background: #225ea8;
+}
+
+.mobileHidden {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .chatListPanel {
+    flex: 1;
+    max-height: 70vh;
+  }
+}

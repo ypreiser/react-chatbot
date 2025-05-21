@@ -1,0 +1,93 @@
+.messageBubble {
+  max-width: 85%;
+  padding: 0.8rem 1rem;
+  border-radius: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  background: #f7fafc;
+  margin-bottom: 0.2rem;
+  align-self: flex-start;
+  word-break: break-word;
+  transition: all 0.2s ease;
+}
+
+.messageBubble.user {
+  background: #3182ce;
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.messageBubble.assistant {
+  background: #e6f7ff;
+  color: #225ea8;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.messageTimestamp {
+  font-size: 0.8rem;
+  color: rgba(136, 136, 136, 0.8);
+  align-self: flex-end;
+  margin-top: 0.3rem;
+}
+
+.user .messageTimestamp {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.attachmentImg {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin-top: 6px;
+  transition: transform 0.2s ease;
+}
+
+.attachmentImg:hover {
+  transform: scale(1.02);
+}
+
+.attachmentLink {
+  display: inline-block;
+  padding: 6px 10px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  color: #0074d9;
+  text-decoration: none;
+  font-size: 0.95em;
+  margin-right: 4px;
+  margin-top: 4px;
+  transition: all 0.2s ease;
+}
+
+.attachmentLink:hover {
+  background: #e0e0e0;
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+@media (min-width: 768px) {
+  .messageBubble {
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 480px) {
+  .messageBubble {
+    max-width: 90%;
+    padding: 0.7rem 0.9rem;
+  }
+  
+  .attachmentImg {
+    max-width: 100%;
+  }
+}

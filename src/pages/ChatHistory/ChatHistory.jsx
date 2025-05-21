@@ -1,173 +1,142 @@
+// src\pages\ChatHistory\ChatHistory.jsx
 //react-chatbot2/src/pages/ChatHistory/ChatHistory.jsx
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../constants/api";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner, FaList, FaComments } from "react-icons/fa";
+import axios from "axios";
 
-import "./ChatHistory.css";
+// Import CSS module
+import styles from "./ChatHistory.module.css";
+
+// Import components
+import ChatListPanel from "./components/ChatListPanel";
+import ChatDetailPanel from "./components/ChatDetailPanel";
+import MobileControls from "./components/MobileControls";
 
 function ChatHistory({ user, isAdmin }) {
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [error, setError] = useState("");
-  const [listloading, setListLoading] = useState(false);
-  const [chatloading, setChatLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [showList, setShowList] = useState(true);
+  const [showDetail, setShowDetail] = useState(false);
 
   useEffect(() => {
-    setListLoading(true);
-    fetch(`${API_BASE_URL}/chats`, { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch chats");
-        return res.json();
-      })
-      .then((data) => setChats(data.chats))
-      .catch((err) => setError(err.message))
-      .finally(() => setListLoading(false));
+    const fetchChats = async () => {
+      setListLoading(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/chats`, {
+          withCredentials: true,
+        });
+        setChats(res.data.chats);
+      } catch (err) {
+        setError(
+          err.response?.data?.message || err.message || "Failed to fetch chats"
+        );
+      } finally {
+        setListLoading(false);
+      }
+    };
+
+    fetchChats();
   }, []);
 
-  const handleChatClick = (chatId) => {
+  // Helper to get message count for a chat (if available)
+  const getMessageCount = (chat) =>
+    typeof chat.messageCount === "number"
+      ? chat.messageCount
+      : chat.messages
+      ? chat.messages.length
+      : 0;
+
+  const handleChatClick = async (chatId) => {
     setChatLoading(true);
-    fetch(`${API_BASE_URL}/chats/${chatId}`, { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch chat");
-        return res.json();
-      })
-      .then((data) => setSelectedChat(data.chat))
-      .catch((err) => setError(err.message))
-      .finally(() => setChatLoading(false));
+    setShowDetail(true);
+
+    // For mobile view, hide list and show detail
+    if (window.innerWidth < 768) {
+      setShowList(false);
+    }
+
+    try {
+      const res = await axios.get(`${API_BASE_URL}/chats/${chatId}`, {
+        withCredentials: true,
+      });
+      console.log("Chat details:", res.data.chat);
+
+      setSelectedChat(res.data.chat);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Failed to fetch chat"
+      );
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const toggleView = (view) => {
+    if (view === "list") {
+      setShowList(true);
+      setShowDetail(false);
+    } else if (view === "detail") {
+      setShowList(false);
+      setShowDetail(true);
+    }
+  };
+
+  // Format date with shorter output on mobile
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (window.innerWidth < 768) {
+      return date.toLocaleDateString();
+    }
+    return date.toLocaleString();
+  };
+
+  // Render truncated text with ellipsis
+  const truncateText = (text, maxLength = 20) => {
+    if (!text) return "-";
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedChat(null);
+    setShowList(true);
+    setShowDetail(false);
   };
 
   return (
-    <div className="chat-history">
-      <h2>{isAdmin ? "All Chats" : "My Chats"}</h2>
-      {error && <div className="error">{error}</div>}
-      <div className="chat-main-layout">
-        <div className="chat-list-panel">
-          {listloading && (
-            <div className="loading-indicator">
-              <FaSpinner className="spinner" /> Loading...
-            </div>
-          )}
-          <table>
-            <thead>
-              <tr>
-                <th>Session</th>
-                <th>User</th>
-                <th>Source</th>
-                <th>Last Active</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {chats.map((chat) => (
-                <tr
-                  key={chat._id}
-                  className={
-                    selectedChat && selectedChat._id === chat._id
-                      ? "selected-row"
-                      : ""
-                  }
-                >
-                  <td>{chat.sessionId}</td>
-                  <td>{chat.userId?.name || chat.userId?.email || "Me"}</td>
-                  <td>{chat.source}</td>
-                  <td>{new Date(chat.updatedAt).toLocaleString()}</td>
-                  <td>
-                    <button onClick={() => handleChatClick(chat._id)}>
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className={styles.chatHistory}>
+      <h2 className={styles.title}>{isAdmin ? "All Chats" : "My Chats"}</h2>
+      {error && <div className={styles.error}>{error}</div>}
+
+      {/* Mobile view controls */}
+      <MobileControls selectedChat={selectedChat} toggleView={toggleView} />
+
+      <div className={styles.chatMainLayout}>
+        <ChatListPanel
+          chats={chats}
+          selectedChat={selectedChat}
+          handleChatClick={handleChatClick}
+          listLoading={listLoading}
+          showList={showList}
+          formatDate={formatDate}
+          truncateText={truncateText}
+          getMessageCount={getMessageCount}
+        />
+
         {selectedChat && (
-          <div className="chat-detail-panel">
-            <h3>Chat Detail</h3>
-            {chatloading && (
-              <div className="loading-indicator">
-                <FaSpinner className="spinner" /> Loading...
-              </div>
-            )}
-            <div>Session: {selectedChat.sessionId}</div>
-            <div>
-              User:{" "}
-              {selectedChat.userId?.name || selectedChat.userId?.email || "Me"}
-            </div>
-            <div>Source: {selectedChat.source}</div>
-            <div>Messages:</div>
-            <ul className="chat-history-messages">
-              {selectedChat.messages.map((msg) => (
-                <li
-                  key={msg._id}
-                  className={`history-message-bubble ${msg.role}`}
-                >
-                  <div className="history-message-content">
-                    {/* Render text or array parts */}
-                    {Array.isArray(msg.content)
-                      ? msg.content.map((part, i) => {
-                          if (part.type === "text") {
-                            return <span key={i}>{part.text}</span>;
-                          } else if (
-                            part.type === "image" &&
-                            typeof part.image === "string"
-                          ) {
-                            return (
-                              <img
-                                key={i}
-                                src={part.image}
-                                alt={
-                                  part.filename ||
-                                  part.originalName ||
-                                  "attached image"
-                                }
-                                className="attachment-img"
-                                style={{
-                                  maxWidth: 200,
-                                  maxHeight: 200,
-                                  margin: "6px 0",
-                                }}
-                              />
-                            );
-                          } else if (
-                            part.type === "file" &&
-                            typeof part.data === "string"
-                          ) {
-                            return (
-                              <a
-                                key={i}
-                                href={part.data}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="attachment-link"
-                                download={part.filename}
-                              >
-                                {part.filename ||
-                                  part.originalName ||
-                                  "Attached File"}
-                              </a>
-                            );
-                          } else {
-                            const attName =
-                              part.filename ||
-                              part.originalName ||
-                              "unknown file";
-                            return (
-                              <span key={i}>[Unsupported: {attName}]</span>
-                            );
-                          }
-                        })
-                      : typeof msg.content === "object" && msg.content !== null
-                      ? msg.content.text
-                      : msg.content}
-                    <span style={{ color: "#888", marginLeft: 8 }}>
-                      ({new Date(msg.timestamp).toLocaleString()})
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ChatDetailPanel
+            selectedChat={selectedChat}
+            chatLoading={chatLoading}
+            showDetail={showDetail}
+            formatDate={formatDate}
+            toggleView={toggleView}
+            onClose={handleCloseDetail}
+          />
         )}
       </div>
     </div>

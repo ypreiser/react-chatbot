@@ -1,0 +1,23 @@
+/* src\pages\ChatHistory\components\MobileControls.module.css */
+.mobileControls {
+  margin-bottom: 1rem;
+}
+
+.mobileToggle {
+  display: none;
+  margin-bottom: 1rem;
+  padding: 0.7rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .mobileToggle {
+    display: block;
+  }
+}

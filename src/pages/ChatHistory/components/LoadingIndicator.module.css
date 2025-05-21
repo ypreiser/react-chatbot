@@ -1,0 +1,19 @@
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  color: #3182ce;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  font-size: 1.5rem;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

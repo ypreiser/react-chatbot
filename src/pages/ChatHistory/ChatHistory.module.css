@@ -1,0 +1,47 @@
+/* src\pages\ChatHistory\ChatHistory.module.css */
+.chatHistory {
+  padding: clamp(1rem, 2vw, 2rem);
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f7f8fa;
+  min-height: 100vh;
+}
+
+.title {
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.error {
+  color: #e53e3e;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.chatMainLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.mobileControls {
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .chatMainLayout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatHistory {
+    padding: 0.8rem;
+  }
+}

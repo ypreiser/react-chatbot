@@ -24,6 +24,14 @@ function ChatHistory({ user, isAdmin }) {
       .finally(() => setListLoading(false));
   }, []);
 
+  // Helper to get message count for a chat (if available)
+  const getMessageCount = (chat) =>
+    typeof chat.messageCount === "number"
+      ? chat.messageCount
+      : chat.messages
+      ? chat.messages.length
+      : 0;
+
   const handleChatClick = (chatId) => {
     setChatLoading(true);
     fetch(`${API_BASE_URL}/chats/${chatId}`, { credentials: "include" })
@@ -54,6 +62,7 @@ function ChatHistory({ user, isAdmin }) {
                 <th>User</th>
                 <th>Source</th>
                 <th>Last Active</th>
+                <th>Messages</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -71,6 +80,7 @@ function ChatHistory({ user, isAdmin }) {
                   <td>{chat.userId?.name || chat.userId?.email || "Me"}</td>
                   <td>{chat.source}</td>
                   <td>{new Date(chat.updatedAt).toLocaleString()}</td>
+                  <td>{getMessageCount(chat)}</td>
                   <td>
                     <button onClick={() => handleChatClick(chat._id)}>
                       View

@@ -1,6 +1,5 @@
 // src\pages\ChatHistory\components\ChatDetailPanel.jsx
-import React from "react";
-import { FaList, FaSpinner } from "react-icons/fa";
+import { FaList, FaSpinner, FaTimes } from "react-icons/fa";
 import LoadingIndicator from "./LoadingIndicator";
 import MessageBubble from "./MessageBubble";
 import styles from "./ChatDetailPanel.module.css";
@@ -23,7 +22,7 @@ const ChatDetailPanel = ({
     >
       <h3 className={styles.title}>Chat Detail</h3>
       <button className={styles.closeButton} onClick={onClose}>
-        X
+        x
       </button>
 
       {chatLoading && <LoadingIndicator />}

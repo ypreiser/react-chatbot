@@ -1,4 +1,4 @@
-import React from "react";
+// src\pages\ChatHistory\components\LoadingIndicator.jsx
 import { FaSpinner } from "react-icons/fa";
 import styles from "./LoadingIndicator.module.css";
 

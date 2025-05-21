@@ -1,6 +1,12 @@
-.chat-history {
-  padding: 2rem;
+/* ChatHistory.css */
+.chat-list-panel,
+.table-container,
+.chat-list-panel table {
+  box-sizing: border-box;
+}
 
+.chat-history {
+  padding: clamp(1rem, 2vw, 2rem);
   font-family: "Segoe UI", Arial, sans-serif;
   background: #f7f8fa;
   min-height: 100vh;
@@ -9,6 +15,7 @@
 h2 {
   margin-bottom: 1.5rem;
   color: #2d3748;
+  font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
 .loading-indicator {
@@ -33,35 +40,95 @@ h2 {
 
 .chat-main-layout {
   display: flex;
+  flex-direction: column;
   gap: 2rem;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .chat-list-panel {
-  flex: 1 1 350px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   padding: 1rem;
-  min-width: 320px;
-  overflow-x: auto;
+  /* overflow-x: auto; --- MODIFICATION: Removed this line --- */
+  /* Rely on .table-container for horizontal table scroll */
+  max-height: 50vh;
+  overflow-y: auto; /* Handles vertical scrolling for the panel (list of chats) */
+}
+
+.table-container {
+  overflow-x: auto; /* Handles horizontal scrolling for the table */
+  width: 100%;
+}
+
+/* Optional: More prominent scrollbar styling for table-container */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+.table-container::-webkit-scrollbar {
+  height: 10px; /* Height of horizontal scrollbar */
+  /* width: 10px; */ /* Width of vertical scrollbar if it had one */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #e2e8f0; /* A slightly lighter track */
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #a0aec0; /* A medium gray thumb */
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #718096; /* Darker thumb on hover */
+}
+
+/* For Firefox */
+.table-container {
+  scrollbar-width: auto; /* 'auto' or 'thin'. 'auto' is often thicker. */
+  scrollbar-color: #a0aec0 #e2e8f0; /* thumb color and track color */
 }
 
 .chat-list-panel table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 650px; /* Minimum width to prevent squeezing, triggers horizontal scroll in .table-container */
 }
 
 .chat-list-panel th,
 .chat-list-panel td {
   padding: 0.5rem 0.7rem;
   text-align: left;
+  white-space: nowrap; /* Keep table content on one line */
+}
+
+/* Specific column nowrap (can be redundant if all cells are nowrap but good for emphasis) */
+.chat-list-panel th:nth-child(1), /* Session */
+.chat-list-panel td:nth-child(1),
+.chat-list-panel th:nth-child(6), /* Messages */
+.chat-list-panel td:nth-child(6),
+.chat-list-panel th:nth-child(7), /* Actions */
+.chat-list-panel td:nth-child(7) {
+  white-space: nowrap;
+}
+
+/* Columns that allow text overflow ellipsis */
+.chat-list-panel th:nth-child(3), /* Source */
+.chat-list-panel td:nth-child(3),
+.chat-list-panel th:nth-child(4), /* System Prompt */
+.chat-list-panel td:nth-child(4) {
+  max-width: 150px; /* Max width before ellipsis */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-list-panel th {
   background: #f1f5f9;
   color: #4a5568;
   font-weight: 600;
+  position: sticky;
+  top: 0; /* Sticky for vertical scroll within .chat-list-panel */
+  z-index: 10;
 }
 
 .chat-list-panel tr {
@@ -91,18 +158,32 @@ h2 {
 }
 
 .chat-detail-panel {
-  flex: 2 1 600px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 1.5rem 2rem;
-  min-width: 350px;
-  max-width: 800px;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.chat-detail-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.chat-detail-header > div {
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
 }
 
 .chat-detail-panel h3 {
   margin-top: 0;
+  margin-bottom: 1rem;
   color: #225ea8;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
 }
 
 .chat-detail-panel ul {
@@ -140,18 +221,22 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 1rem;
 }
 
 .history-message-bubble {
-  max-width: 70%;
-  padding: 0.7rem 1rem;
+  max-width: 85%;
+  padding: 0.8rem 1rem;
   border-radius: 15px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   position: relative;
   background: #f7fafc;
   margin-bottom: 0.2rem;
   align-self: flex-start;
   word-break: break-word;
+  transition: all 0.2s ease;
 }
 
 .history-message-bubble.user {
@@ -174,27 +259,112 @@ h2 {
   gap: 0.3rem;
 }
 
+.message-timestamp {
+  font-size: 0.8rem;
+  color: rgba(136, 136, 136, 0.8);
+  align-self: flex-end;
+  margin-top: 0.3rem;
+}
+
+.history-message-bubble.user .message-timestamp {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .attachment-img {
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid #ddd;
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
-  margin-top: 4px;
+  margin-top: 6px;
+  transition: transform 0.2s ease;
+}
+
+.attachment-img:hover {
+  transform: scale(1.02);
 }
 
 .attachment-link {
   display: inline-block;
-  padding: 4px 8px;
+  padding: 6px 10px;
   background: #f0f0f0;
-  border-radius: 4px;
+  border-radius: 6px;
   color: #0074d9;
   text-decoration: none;
   font-size: 0.95em;
   margin-right: 4px;
+  margin-top: 4px;
+  transition: all 0.2s ease;
 }
 
 .attachment-link:hover {
   background: #e0e0e0;
   text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.mobile-toggle {
+  display: none;
+  margin-bottom: 1rem;
+  padding: 0.7rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .chat-main-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .chat-list-panel {
+    flex: 1;
+    max-height: 70vh; /* Panel height on desktop */
+  }
+
+  .chat-detail-panel {
+    flex: 2;
+  }
+
+  .history-message-bubble {
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-toggle {
+    display: block;
+  }
+
+  .chat-list-panel.mobile-hidden {
+    display: none;
+  }
+
+  .chat-detail-panel.mobile-hidden {
+    display: none;
+  }
+
+  .attachment-img {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-history {
+    padding: 0.8rem;
+  }
+
+  .chat-detail-panel {
+    padding: 1rem;
+  }
+
+  .history-message-bubble {
+    max-width: 90%;
+    padding: 0.7rem 0.9rem;
+  }
 }

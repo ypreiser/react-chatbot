@@ -1,3 +1,4 @@
+// src\data\translations.js
 //react-chatbot2/src/data/translations.js
 export const translations = {
   en: {

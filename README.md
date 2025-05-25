@@ -1,12 +1,65 @@
-# React + Vite
+# React WhatsApp Chatbot Admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application for managing WhatsApp chatbot sessions, system prompts, chat history, and user/admin dashboards.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Chat Interface:** Start and manage chat sessions with AI, send messages and attachments.
+- **System Prompt Editor:** Create, edit, and manage system prompts for chatbot behavior.
+- **WhatsApp Session Management:** Connect/disconnect WhatsApp numbers, scan QR codes, and monitor connection status.
+- **Chat History:** View past chat sessions and message details.
+- **Admin Dashboard:** Manage users and system prompts (admin only).
+- **Multi-language Support:** English and Hebrew UI.
+- **Authentication:** Login and registration flows.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js (v16+ recommended)
+- npm or yarn
+
+### Installation
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### Environment Variables
+
+Create a `.env` file in the project root with:
+
+```
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_API_CHAT_URL=http://localhost:5000/chat
+```
+
+Adjust the URLs as needed for your backend.
+
+### Running the App
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+The app will be available at [http://localhost:5173](http://localhost:5173) by default.
+
+## Project Structure
+
+- `src/pages/ChatInterface` - Main chat UI with file upload support
+- `src/pages/SystemPromptForm` - System prompt editor form
+- `src/pages/Whatsapp` - WhatsApp connection/session management
+- `src/pages/ChatHistory` - Chat history and details
+- `src/pages/AdminDashboard` - Admin-only dashboard
+- `src/components/Header` - Navigation header
+- `src/data/translations.js` - UI translations
+- `src/constants/api.js` - API endpoint configuration
+
+## Customization
+
+- Update `src/data/translations.js` for additional languages.
+- Adjust styles in `src/variables.css` and component CSS files.

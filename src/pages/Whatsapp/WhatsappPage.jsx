@@ -1,3 +1,4 @@
+// src\pages\Whatsapp\WhatsappPage.jsx
 //react-chatbot2/src/pages/Whatsapp/WhatsappPage.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
@@ -203,8 +204,8 @@ const WhatsappPage = () => {
     async function fetchPrompts() {
       try {
         const response = await axios.get(`${API_CHAT_URL}/prompts`);
-        console.log("feched system prompts:",response);
-        
+        console.log("feched system prompts:", response);
+
         setSystemPrompts(response.data || []);
       } catch (err) {
         const errorMsg =

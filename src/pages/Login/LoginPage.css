@@ -1,59 +1,367 @@
-.login-container {
+/* src/pages/Login/LoginPage.css */
+/* This file now assumes that src/variables.css is loaded globally or imported. */
+
+/* --- Base Styles --- */
+body {
+  font-family: var(--font-family); /* From variables.css */
+  color: var(--text-color-dark); /* From variables.css */
+  background-color: var(--secondary-background); /* From variables.css */
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* --- Page Container --- */
+.auth-page-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f7f7f7;
+  padding: var(--padding-large); /* Was calc(var(--spacing-unit) * 2) -> 1rem */
+  box-sizing: border-box;
 }
 
-.login-form {
-  background: #fff;
-  padding: 2rem 2.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+/* --- Form Styling --- */
+.auth-form {
+  background: var(--text-color-light); /* #fff from variables.css */
+  padding: var(--padding-extra-large)
+    calc(var(--padding-extra-large) + var(--padding-medium)); /* Approx 1.5rem 2.25rem. Original: 40px 48px */
+  border-radius: var(--border-radius); /* From variables.css */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 480px;
   min-width: 320px;
+  box-sizing: border-box;
 }
 
-.login-form h2 {
-  margin-bottom: 1.5rem;
+.auth-form h2 {
+  margin-top: 0;
+  margin-bottom: var(
+    --margin-large
+  ); /* Was calc(var(--spacing-unit) * 4) -> 1.5rem */
   text-align: center;
+  color: var(--text-color-dark);
+  font-size: 1.75rem;
+  font-weight: 600;
 }
 
-.login-form label {
-  margin-bottom: 0.25rem;
+/* --- Form Elements --- */
+.form-group {
+  margin-bottom: var(
+    --margin-large
+  ); /* Was calc(var(--spacing-unit) * 3) -> 1.5rem */
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: var(
+    --margin-small
+  ); /* Was calc(var(--spacing-unit) * 1) -> 0.5rem */
   font-weight: 500;
+  color: var(--text-color-medium); /* From variables.css */
+  font-size: 0.9rem;
 }
 
-.login-form input {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.auth-form input[type="tel"],
+.auth-form input[type="url"] {
+  width: 100%;
+  padding: var(--padding-medium) var(--padding-large); /* Was calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2) -> 0.75rem 1rem */
+  border: 1px solid var(--border-color); /* From variables.css */
+  border-radius: var(--border-radius); /* From variables.css */
   font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  color: var(--text-color-dark);
+  background-color: var(--text-color-light);
 }
 
-.login-form button {
-  background: #007bff;
-  color: #fff;
+.auth-form input[type="text"]:focus,
+.auth-form input[type="email"]:focus,
+.auth-form input[type="password"]:focus,
+.auth-form input[type="tel"]:focus,
+.auth-form input[type="url"]:focus {
+  border-color: var(--primary-color); /* From variables.css */
+  outline: 0;
+  /* Assuming #007bff is rgb(0, 123, 255) */
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* --- Buttons --- */
+.auth-form button[type="submit"] {
+  background: var(--primary-color); /* From variables.css */
+  color: var(--text-color-light); /* From variables.css */
   border: none;
-  padding: 0.75rem;
-  border-radius: 4px;
+  padding: var(--padding-medium) var(--padding-large); /* Consistent padding */
+  border-radius: var(--border-radius); /* From variables.css */
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+  margin-top: var(--margin-small); /* Was calc(var(--spacing-unit) * 2) */
+}
+
+.auth-form button[type="submit"]:hover {
+  background: var(--primary-hover-color); /* From variables.css */
+  transform: translateY(-1px);
+}
+
+.auth-form button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+.auth-form button[type="submit"]:disabled {
+  background: var(
+    --assistant-bubble-color
+  ); /* Using a light gray from variables.css, was --primary-color-light */
+  color: var(
+    --text-color-medium
+  ); /* Using medium text color from variables.css */
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-form button[type="submit"]:focus-visible {
+  outline: 2px solid var(--primary-hover-color); /* From variables.css */
+  outline-offset: 2px;
+}
+
+/* --- Feedback Messages --- */
+.form-message {
+  margin-bottom: var(--margin-medium); /* Was calc(var(--spacing-unit) * 3) */
+  padding: var(--padding-medium) var(--padding-large);
+  border-radius: var(--border-radius); /* From variables.css */
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.form-error-message {
+  background-color: var(--error-bg-color); /* From variables.css */
+  color: var(--error-color); /* Text color for errors, usually darker than bg */
+  border: 1px solid var(--error-border-color); /* From variables.css */
+}
+
+.form-success-message {
+  background-color: var(--success-bg-color); /* From variables.css */
+  color: var(--success-color); /* Text color for success */
+  border: 1px solid var(--success-border-color); /* From variables.css */
+}
+
+/* --- Form Footer Link --- */
+.form-footer-link {
+  margin-top: var(--margin-large); /* Was calc(var(--spacing-unit) * 4) */
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.form-footer-link a {
+  color: var(--primary-color); /* From variables.css */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.form-footer-link a:hover {
+  text-decoration: underline;
+  color: var(--primary-hover-color); /* From variables.css */
+}
+
+/* --- Fieldset for Registration Page --- */
+.auth-form fieldset {
+  border: 1px solid var(--border-color); /* From variables.css */
+  border-radius: var(--border-radius); /* From variables.css */
+  padding: var(--padding-large) var(--padding-extra-large); /* Was calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 4) */
+  margin-bottom: var(--margin-large); /* Was calc(var(--spacing-unit) * 4) */
+}
+
+.auth-form fieldset:last-of-type {
+  margin-bottom: var(--margin-medium); /* Was calc(var(--spacing-unit) * 2) */
+}
+
+.auth-form legend {
+  font-weight: 600;
+  color: var(--primary-color); /* From variables.css */
+  padding: 0 var(--padding-small);
+  font-size: 1.1rem;
+  margin-bottom: var(--margin-medium); /* Was calc(var(--spacing-unit) * 2) */
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .auth-form {
+    padding: var(--padding-large) var(--padding-large); /* Was calc(var(--spacing-unit) * 4) */
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page-container {
+    padding: var(--padding-small); /* Was var(--spacing-unit) */
+  }
+  .auth-form {
+    padding: var(--padding-medium) var(--padding-large); /* Was calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 2.5) */
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+    justify-content: center;
+  }
+  .auth-form h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--margin-medium); /* Was calc(var(--spacing-unit) * 3) */
+  }
+  .auth-form fieldset {
+    padding: var(--padding-medium) var(--padding-large); /* Was calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 2) */
+  }
+}
+
+/* --- Legacy class names for backward compatibility, applying new styles --- */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--padding-large);
+  box-sizing: border-box;
+}
+
+.login-form {
+  background: var(--text-color-light);
+  padding: var(--padding-extra-large)
+    calc(var(--padding-extra-large) + var(--padding-small)); /* Adjusted to use new vars */
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  min-width: 320px;
+  box-sizing: border-box;
+}
+
+.login-form h2 {
+  margin-top: 0;
+  margin-bottom: var(--margin-large);
+  text-align: center;
+  color: var(--text-color-dark);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: var(--margin-small);
+  font-weight: 500;
+  color: var(--text-color-medium);
+  font-size: 0.9rem;
+}
+
+.login-form input {
+  /* This general input styling might need to be more specific if other input types are added */
+  width: 100%;
+  padding: var(--padding-medium) var(--padding-large);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  margin-bottom: var(
+    --margin-medium
+  ); /* Default margin for inputs in .login-form */
+  color: var(--text-color-dark);
+  background-color: var(--text-color-light);
+}
+.login-form input:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* primary color #007bff */
+}
+
+.login-form button {
+  background: var(--primary-color);
+  color: var(--text-color-light);
+  border: none;
+  padding: var(--padding-medium) var(--padding-large);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+  margin-top: var(--margin-small);
+}
+.login-form button:hover {
+  background: var(--primary-hover-color);
+  transform: translateY(-1px);
+}
+.login-form button:active {
+  transform: translateY(0);
 }
 
 .login-form button:disabled {
-  background: #b3d1ff;
+  background: var(--assistant-bubble-color);
+  color: var(--text-color-medium);
   cursor: not-allowed;
+  transform: none;
+}
+.login-form button:focus-visible {
+  outline: 2px solid var(--primary-hover-color);
+  outline-offset: 2px;
 }
 
 .login-error {
-  color: #d32f2f;
-  margin-bottom: 1rem;
+  background-color: var(--error-bg-color);
+  color: var(--error-color);
+  border: 1px solid var(--error-border-color);
+  margin-bottom: var(--margin-medium);
+  padding: var(--padding-medium) var(--padding-large);
+  border-radius: var(--border-radius);
   text-align: center;
   font-size: 0.95rem;
+}
+
+/* Applying .auth-form styles to .login-form if specific overrides are needed */
+.login-form.auth-form {
+  max-width: 420px;
+}
+
+/* Ensure inputs inside a .form-group don't double up bottom margin if .login-form input also has it */
+.login-form .form-group input {
+  margin-bottom: 0; /* Override general .login-form input margin if it's inside a .form-group */
+}
+/* If form-group is the direct parent of label + input, margin should be on form-group */
+.login-form .form-group {
+  margin-bottom: var(
+    --margin-large
+  ); /* Ensure form-group controls the bottom spacing */
+}
+
+/* Footer link within .login-form should use styles similar to .form-footer-link */
+.login-form div[style*="marginTop: 10"] {
+  /* Old inline style selector - best to update JSX to use class */
+  margin-top: var(
+    --margin-large
+  ) !important; /* Override inline style if possible */
+  text-align: center;
+  font-size: 0.9rem;
+}
+.login-form div[style*="marginTop: 10"] a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+.login-form div[style*="marginTop: 10"] a:hover {
+  text-decoration: underline;
+  color: var(--primary-hover-color);
+}
+
+/* Success message in RegisterPage used inline style, better to use class */
+div[style*="color: green"] {
+  /* Old inline style selector */
+  /* This should be replaced by .form-success-message styling if applied in JSX */
+  color: var(--success-color) !important;
+  margin-bottom: var(--margin-medium) !important;
 }

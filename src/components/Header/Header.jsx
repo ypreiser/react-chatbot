@@ -1,16 +1,14 @@
+// src\components\Header\Header.jsx
 //react-chatbot2/src/components/Header/Header.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Header.css";
 import logo from "../../assets/logoTenLow-02.jpg";
 
-export default function Header({ user }) {
+export default function Header({ user, onLogout }) {
   const handleLogOut = () => {
     if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.clear();
-      document.cookie =
-        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      window.location.href = "/login";
+      onLogout();
     } else {
       console.log("Logout canceled");
     }

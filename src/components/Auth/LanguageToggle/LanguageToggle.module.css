@@ -1,0 +1,47 @@
+/* src\components\Auth\LanguageToggle\LanguageToggle.module.css */
+/* src/components/Auth/LanguageToggle/LanguageToggle.module.css */
+.languageToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-small);
+  margin-bottom: var(--margin-medium);
+  position: absolute; /* Position relative to authPageContainer */
+  top: var(--padding-large);
+  right: var(--padding-large);
+}
+
+.languageToggleContainer label {
+  font-size: 0.9rem;
+  color: var(--text-color-medium);
+}
+
+.toggleButton {
+  padding: var(--padding-small) var(--padding-medium);
+  border: 1px solid var(--border-color);
+  background-color: var(--text-color-light);
+  color: var(--primary-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+}
+
+/* Adjust for RTL */
+[dir="rtl"] .languageToggleContainer {
+  right: auto;
+  left: var(--padding-large);
+}
+
+@media (max-width: 480px) {
+  .languageToggleContainer {
+    position: static; /* In flow on small screens */
+    justify-content: center; /* Center it */
+    width: 100%;
+    margin-top: var(--margin-medium);
+  }
+}

@@ -1,3 +1,4 @@
+// src\pages\Login\RegisterPage.jsx
 //react-chatbot2/src/pages/Login/RegisterPage.jsx
 import React, { useState } from "react";
 import axios from "axios";
@@ -12,6 +13,14 @@ const Register = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [businessIdNumber, setBusinessIdNumber] = useState("");
+  const [companyPhone, setCompanyPhone] = useState("");
+  const [businessField, setBusinessField] = useState("");
+  const [website, setWebsite] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,7 +31,19 @@ const Register = () => {
     try {
       await axios.post(
         `${API_BASE_URL}/auth/register`,
-        { email, password, name },
+        {
+          email,
+          password,
+          name,
+          businessName,
+          businessType,
+          businessIdNumber,
+          companyPhone,
+          businessField,
+          website,
+          contactName,
+          contactPhone,
+        },
         { withCredentials: true }
       );
       setSuccess("Registration successful! You can now log in.");
@@ -62,6 +83,69 @@ const Register = () => {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <label htmlFor="businessName">שם העסק</label>
+        <input
+          id="businessName"
+          type="text"
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
+          required
+        />
+        <label htmlFor="businessType">ח.פ/ע.מ/ע.פ</label>
+        <input
+          id="businessType"
+          type="text"
+          value={businessType}
+          onChange={(e) => setBusinessType(e.target.value)}
+          required
+        />
+        <label htmlFor="businessIdNumber">מספר ח.פ/ע.מ/ע.פ</label>
+        <input
+          id="businessIdNumber"
+          type="text"
+          value={businessIdNumber}
+          onChange={(e) => setBusinessIdNumber(e.target.value)}
+          required
+        />
+        <label htmlFor="companyPhone">מספר טלפון של החברה</label>
+        <input
+          id="companyPhone"
+          type="tel"
+          value={companyPhone}
+          onChange={(e) => setCompanyPhone(e.target.value)}
+          required
+        />
+        <label htmlFor="businessField">תחום העסק</label>
+        <input
+          id="businessField"
+          type="text"
+          value={businessField}
+          onChange={(e) => setBusinessField(e.target.value)}
+          required
+        />
+        <label htmlFor="website">כתובת אתר אינטרנט (אם יש)</label>
+        <input
+          id="website"
+          type="url"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+        <label htmlFor="contactName">שם איש הקשר</label>
+        <input
+          id="contactName"
+          type="text"
+          value={contactName}
+          onChange={(e) => setContactName(e.target.value)}
+          required
+        />
+        <label htmlFor="contactPhone">מספר טלפון של איש הקשר</label>
+        <input
+          id="contactPhone"
+          type="tel"
+          value={contactPhone}
+          onChange={(e) => setContactPhone(e.target.value)}
           required
         />
         {error && <div className="login-error">{error}</div>}

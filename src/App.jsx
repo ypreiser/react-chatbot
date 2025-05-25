@@ -12,6 +12,8 @@ import Login from "./pages/Login/LoginPage";
 import Register from "./pages/Login/RegisterPage";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import ChatHistory from "./pages/ChatHistory/ChatHistory";
+import { LanguageProvider } from "./contexts/LanguageContext.jsx";
+
 import axios from "axios";
 
 function App() {
@@ -56,36 +58,40 @@ function App() {
 
   if (!user) {
     return (
-      <Routes>
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Login onLogin={handleLogin} />} />
-      </Routes>
+      <LanguageProvider>
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Login onLogin={handleLogin} />} />
+        </Routes>
+      </LanguageProvider>
     );
   }
 
   return (
-    <>
-      <Header user={user} onLogout={handleLogout} />
-      <main>
-        <Routes>
-          <Route path="/" element={<ChatInterface user={user} />} />
-          <Route path="/system" element={<SystemPromptForm user={user} />} />
-          <Route path="/whatsapp" element={<WhatsappPage user={user} />} />
-          <Route path="/admin" element={<AdminDashboard user={user} />} />
-          <Route
-            path="/chats"
-            element={
-              <ChatHistory
-                user={user}
-                isAdmin={user.privlegeLevel === "admin"}
-              />
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-    </>
+    <LanguageProvider>
+      <>
+        <Header user={user} onLogout={handleLogout} />
+        <main>
+          <Routes>
+            <Route path="/" element={<ChatInterface user={user} />} />
+            <Route path="/system" element={<SystemPromptForm user={user} />} />
+            <Route path="/whatsapp" element={<WhatsappPage user={user} />} />
+            <Route path="/admin" element={<AdminDashboard user={user} />} />
+            <Route
+              path="/chats"
+              element={
+                <ChatHistory
+                  user={user}
+                  isAdmin={user.privlegeLevel === "admin"}
+                />
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
+      </>
+    </LanguageProvider>
   );
 }
 

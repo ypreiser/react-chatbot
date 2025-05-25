@@ -1,10 +1,9 @@
 // src\pages\Login\LoginPage.jsx
-//react-chatbot2/src/pages/Login/LoginPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../../constants/api";
-import "./LoginPage.css";
+import "./LoginPage.css"; // Shared CSS file
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
@@ -12,10 +11,19 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Ref for the error message to manage focus on error
+  const errorRef = useRef(null);
+
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.focus(); // Focus the error message for screen readers
+    }
+  }, [error]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(""); // Clear previous errors
     try {
       const res = await axios.post(
         `${API_BASE_URL}/auth/login`,
@@ -24,44 +32,85 @@ const Login = ({ onLogin }) => {
       );
       if (res.data.user) {
         onLogin(res.data.user);
+      } else {
+        // Handle cases where user might not be in response, though API should be consistent
+        setError("Login failed. Unexpected response from server.");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed. Please try again.");
+      const errorMessage =
+        err.response?.data?.error ||
+        "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit} autoComplete="off">
-        <h2>Login</h2>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoFocus
-        />
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <div className="login-error">{error}</div>}
-        <button type="submit" disabled={loading}>
+    <main className="auth-page-container login-container" id="main-content">
+      {/* Added login-container for backward compatibility if some styles were specific */}
+      <form
+        className="auth-form login-form" // Added auth-form for new styles, login-form for backward compatibility
+        onSubmit={handleSubmit}
+        noValidate // Disable browser's default validation, we handle it
+        aria-labelledby="login-title"
+      >
+        <h2 id="login-title">Login</h2>
+
+        {error && (
+          <div
+            className="form-message form-error-message login-error" // Use new classes, keep old for compatibility
+            role="alert" // Announce errors to screen readers
+            aria-live="assertive" // Ensures immediate announcement of the error
+            ref={errorRef}
+            tabIndex={-1} // Make it focusable programmatically
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="form-group">
+          <label htmlFor="email">Email Address</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoFocus
+            autoComplete="email"
+            aria-describedby={error ? "login-error-message" : undefined} // if we had field specific errors
+            aria-invalid={!!error} // A general error makes the form potentially invalid
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            aria-describedby={error ? "login-error-message" : undefined}
+            aria-invalid={!!error}
+          />
+        </div>
+
+        <button type="submit" disabled={loading} aria-busy={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-        <div style={{ marginTop: 10, textAlign: "center" }}>
-          Don't have an account? <Link to="/register">Register</Link>
+
+        <div
+          className="form-footer-link"
+          style={{ marginTop: "calc(var(--spacing-unit) * 4)" }}
+        >
+          {"Don't have an account? "}
+          <Link to="/register">Register</Link>
         </div>
       </form>
-    </div>
+    </main>
   );
 };
 

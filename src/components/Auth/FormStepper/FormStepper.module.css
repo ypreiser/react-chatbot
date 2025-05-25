@@ -1,0 +1,78 @@
+/* src\components\Auth\FormStepper\FormStepper.module.css */
+/* src/components/Auth/FormStepper/FormStepper.module.css */
+.stepperContainer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: var(--margin-large);
+  padding: var(--padding-medium) 0;
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 600px; /* Match authForm max-width */
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-color-medium);
+  font-size: 0.85rem;
+  position: relative;
+  flex: 1;
+  text-align: center;
+}
+
+.stepNumber {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--secondary-background);
+  border: 2px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: var(--margin-small);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.stepLabel {
+  font-size: 0.8rem;
+  max-width: 100px; /* Prevent long labels from breaking layout */
+}
+
+.step.active .stepNumber {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-color-light);
+}
+
+.step.active .stepLabel {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.step.completed .stepNumber {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  color: var(--text-color-light);
+}
+.step.completed .stepLabel {
+  color: var(--text-color-dark);
+}
+
+/* Connector lines - pseudo elements */
+.stepperContainer .step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 16px; /* Vertically center with stepNumber */
+  left: calc(50% + 20px); /* Start after the circle */
+  right: calc(-50% + 20px); /* End before the next circle */
+  height: 2px;
+  background-color: var(--border-color);
+  z-index: -1; /* Behind the step numbers */
+}
+
+.stepperContainer .step.completed:not(:last-child)::after {
+  background-color: var(--success-color);
+}

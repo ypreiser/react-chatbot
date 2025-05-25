@@ -1,0 +1,274 @@
+/* src\pages\Login\AuthForm.module.css */
+/* src/pages/Login/AuthForm.module.css */
+/* This file now assumes that src/styles/variables.css is loaded globally. */
+
+/* --- Base Styles --- */
+.authPageContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Align to top for multi-step */
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--padding-large);
+  box-sizing: border-box;
+  background-color: var(--secondary-background);
+}
+
+.authForm {
+  background: var(--text-color-light);
+  padding: var(--padding-extra-large);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px; /* Increased max-width for multi-column steps */
+  min-width: 320px;
+  box-sizing: border-box;
+  margin-top: var(--margin-medium);
+}
+
+.authForm h2 {
+  margin-top: 0;
+  margin-bottom: var(--margin-large);
+  text-align: center;
+  color: var(--text-color-dark);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* --- Form Elements --- */
+.formGroup {
+  margin-bottom: var(
+    --margin-medium
+  ); /* Reduced from large for tighter packing */
+  display: flex;
+  flex-direction: column; /* Default stacking */
+}
+
+.authForm label {
+  display: block;
+  margin-bottom: var(--margin-small);
+  font-weight: 500;
+  color: var(--text-color-medium);
+  font-size: 0.9rem;
+}
+
+.authForm input[type="text"],
+.authForm input[type="email"],
+.authForm input[type="password"],
+.authForm input[type="tel"],
+.authForm input[type="url"],
+.authForm select {
+  /* Added select styling */
+  width: 100%;
+  padding: var(--padding-medium) var(--padding-large);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  color: var(--text-color-dark);
+  background-color: var(--text-color-light);
+  font-family: var(--font-family);
+}
+
+.authForm input[type="text"]:focus,
+.authForm input[type="email"]:focus,
+.authForm input[type="password"]:focus,
+.authForm input[type="tel"]:focus,
+.authForm input[type="url"]:focus,
+.authForm select:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Match var(--primary-color) */
+}
+
+.inputErrorText {
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: var(--margin-small);
+}
+
+.passwordRequirementText {
+  font-size: 0.8rem;
+  color: var(--text-color-medium);
+  margin-top: var(--margin-small);
+}
+
+/* --- Fieldset & Legend --- */
+.authForm fieldset {
+  border: none; /* Use card style instead of fieldset border */
+  padding: 0;
+  margin: 0 0 var(--margin-large) 0;
+}
+
+.authForm legend {
+  font-weight: 600;
+  color: var(--primary-color);
+  padding-bottom: var(--padding-small);
+  font-size: 1.2rem; /* Larger legend */
+  margin-bottom: var(--margin-medium);
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+}
+
+/* --- Step Layout (2 columns) --- */
+.stepRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--margin-medium); /* Space between columns */
+}
+
+.stepRow > .formGroup {
+  flex: 1 1 calc(50% - (var(--margin-medium) / 2)); /* Two columns with gap */
+  min-width: 200px; /* Prevent excessive squishing */
+  margin-bottom: var(
+    --margin-medium
+  ); /* Ensure consistent bottom margin for rows */
+}
+
+/* For single full-width items within a row context, or if only one item */
+.stepRow > .formGroupFullWidth {
+  flex: 1 1 100%;
+}
+
+/* --- Buttons --- */
+.formActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--margin-large);
+  gap: var(--margin-medium);
+}
+
+.authForm button {
+  /* General button styling for next/prev/submit */
+  background: var(--primary-color);
+  color: var(--text-color-light);
+  border: none;
+  padding: var(--padding-medium) var(--padding-large);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  flex-grow: 1; /* Make buttons take available space */
+}
+.authForm button:only-child {
+  /* If only one button (e.g. first step "Next") */
+  margin-left: auto; /* Pushes to the right */
+}
+
+.authForm button.secondaryAction {
+  background-color: var(--secondary-background);
+  color: var(--text-color-dark);
+  border: 1px solid var(--border-color);
+}
+.authForm button.secondaryAction:hover {
+  background-color: var(--border-color);
+}
+
+.authForm button:hover {
+  background: var(--primary-hover-color);
+  transform: translateY(-1px);
+}
+
+.authForm button:active {
+  transform: translateY(0);
+}
+
+.authForm button:disabled {
+  background: var(--assistant-bubble-color);
+  color: var(--text-color-medium);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.authForm button:focus-visible {
+  outline: 2px solid var(--primary-hover-color);
+  outline-offset: 2px;
+}
+
+/* --- Feedback Messages --- */
+.formMessage {
+  margin-bottom: var(--margin-medium);
+  padding: var(--padding-medium) var(--padding-large);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.formErrorMessageGlobal {
+  background-color: var(--error-bg-color);
+  color: var(--error-color);
+  border: 1px solid var(--error-border-color);
+}
+
+.formSuccessMessageGlobal {
+  background-color: var(--success-bg-color);
+  color: var(--success-color);
+  border: 1px solid var(--success-border-color);
+}
+
+/* --- Form Footer Link --- */
+.formFooterLink {
+  margin-top: var(--margin-large);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.formFooterLink a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.formFooterLink a:hover {
+  text-decoration: underline;
+  color: var(--primary-hover-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .authForm {
+    max-width: 500px;
+    padding: var(--padding-large);
+  }
+  .stepRow > .formGroup {
+    flex: 1 1 100%; /* Stack columns on smaller screens */
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .authPageContainer {
+    padding: var(--padding-small);
+  }
+  .authForm {
+    padding: var(--padding-medium);
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 0;
+    min-height: calc(
+      100vh - (var(--padding-small) * 2)
+    ); /* Full height minus page padding */
+  }
+  .authForm h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--margin-medium);
+  }
+  .formActions {
+    flex-direction: column-reverse; /* Stack buttons, submit last */
+  }
+  .authForm button {
+    width: 100%;
+  }
+  .authForm button:only-child {
+    margin-left: 0;
+  }
+}
+
+/* Specific login form styling if needed, can be co-applied with authForm */
+.loginFormOnly {
+  max-width: 420px;
+}

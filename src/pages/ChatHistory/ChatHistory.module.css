@@ -24,7 +24,7 @@
 
 .chatMainLayout {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Default: Stacked layout */
   gap: 2rem;
   align-items: stretch;
 }
@@ -33,7 +33,9 @@
   margin-bottom: 1rem;
 }
 
-@media (min-width: 768px) {
+/* Apply row layout only when viewport is wider */
+@media (min-width: 1100px) {
+  /* Adjusted breakpoint from 768px */
   .chatMainLayout {
     flex-direction: row;
     align-items: flex-start;

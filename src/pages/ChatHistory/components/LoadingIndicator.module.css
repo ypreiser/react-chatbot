@@ -10,7 +10,6 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  font-size: 1.5rem;
 }
 
 @keyframes spin {

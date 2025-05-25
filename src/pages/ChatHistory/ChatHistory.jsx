@@ -2,7 +2,7 @@
 //react-chatbot2/src/pages/ChatHistory/ChatHistory.jsx
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../constants/api";
-import { FaSpinner, FaList, FaComments } from "react-icons/fa";
+// Removed FaSpinner, FaList, FaComments from react-icons as they are now handled by child components with custom SVGs
 import axios from "axios";
 
 // Import CSS module
@@ -11,7 +11,7 @@ import styles from "./ChatHistory.module.css";
 // Import components
 import ChatListPanel from "./components/ChatListPanel";
 import ChatDetailPanel from "./components/ChatDetailPanel";
-import MobileControls from "./components/MobileControls";
+import MobileControls from "./components/MobileControls"; // MobileControls now uses custom SVGs
 
 function ChatHistory({ user, isAdmin }) {
   const [chats, setChats] = useState([]);
@@ -88,7 +88,8 @@ function ChatHistory({ user, isAdmin }) {
   // Format date with shorter output on mobile
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    if (window.innerWidth < 768) {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      // Added typeof window check
       return date.toLocaleDateString();
     }
     return date.toLocaleString();
@@ -113,7 +114,7 @@ function ChatHistory({ user, isAdmin }) {
       <h2 className={styles.title}>{isAdmin ? "All Chats" : "My Chats"}</h2>
       {error && <div className={styles.error}>{error}</div>}
 
-      {/* Mobile view controls */}
+      {/* Mobile view controls - now uses custom SVGs internally */}
       <MobileControls selectedChat={selectedChat} toggleView={toggleView} />
 
       <div className={styles.chatMainLayout}>

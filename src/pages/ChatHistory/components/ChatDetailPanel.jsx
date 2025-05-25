@@ -1,7 +1,10 @@
 // src\pages\ChatHistory\components\ChatDetailPanel.jsx
-import { FaList, FaSpinner, FaTimes } from "react-icons/fa";
+import React from "react"; // Added React import
+// Removed FaList, FaSpinner, FaTimes from react-icons
 import LoadingIndicator from "./LoadingIndicator";
 import MessageBubble from "./MessageBubble";
+import TimesIcon from "../../../components/Icons/TimesIcon"; // Import custom TimesIcon
+import ListIcon from "../../../components/Icons/ListIcon"; // Import custom ListIcon
 import styles from "./ChatDetailPanel.module.css";
 
 const ChatDetailPanel = ({
@@ -20,46 +23,57 @@ const ChatDetailPanel = ({
         !showDetail ? styles.mobileHidden : ""
       }`}
     >
-      <h3 className={styles.title}>Chat Detail</h3>
-      <button className={styles.closeButton} onClick={onClose}>
-        x
-      </button>
+      <div className={styles.panelHeader}>
+        <h3 className={styles.title}>Chat Detail</h3>
+        <button
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="Close chat detail"
+        >
+          <TimesIcon size="18px" />{" "}
+          {/* Use TimesIcon, adjusted size for button */}
+        </button>
+      </div>
 
       {chatLoading && <LoadingIndicator />}
 
       <div className={styles.chatDetailHeader}>
-        <div>
-          <strong>Session:</strong> {selectedChat.sessionId}
+        <div className={styles.headerItem}>
+          <strong className={styles.headerLabel}>Session:</strong>
+          <span className={styles.headerValue}>{selectedChat.sessionId}</span>
         </div>
-        <div>
-          <strong>User:</strong>{" "}
-          {selectedChat.userId?.name || selectedChat.userId?.email || "Me"}
+        <div className={styles.headerItem}>
+          <strong className={styles.headerLabel}>User:</strong>
+          <span className={styles.headerValue}>
+            {selectedChat.userId?.name || selectedChat.userId?.email || "Me"}
+          </span>
         </div>
-        <div>
-          <strong>Source:</strong> {selectedChat.source}
+        <div className={styles.headerItem}>
+          <strong className={styles.headerLabel}>Source:</strong>
+          <span className={styles.headerValue}>{selectedChat.source}</span>
         </div>
-        <div>
-          <strong>System Prompt:</strong> {selectedChat.systemPromptName || "-"}
+        <div className={styles.headerItem}>
+          <strong className={styles.headerLabel}>System Prompt:</strong>
+          <span className={styles.headerValue}>
+            {selectedChat.systemPromptName || "-"}
+          </span>
         </div>
       </div>
 
-      <div>
-        <strong>Messages:</strong>
-      </div>
+      <h4 className={styles.messagesTitle}>Messages</h4>
       <ul className={styles.chatHistoryMessages}>
         {selectedChat.messages.map((msg) => (
           <MessageBubble key={msg._id} message={msg} formatDate={formatDate} />
         ))}
       </ul>
 
-      {/* Mobile back button */}
-      {window.innerWidth < 768 && (
+      {typeof window !== "undefined" && window.innerWidth < 768 && (
         <button
           className={styles.mobileToggle}
           onClick={() => toggleView("list")}
-          style={{ marginTop: "1.5rem" }}
         >
-          <FaList style={{ marginRight: "8px" }} /> Back to Chat List
+          <ListIcon size="1em" style={{ marginRight: "8px" }} /> Back to Chat
+          List {/* Use ListIcon */}
         </button>
       )}
     </div>

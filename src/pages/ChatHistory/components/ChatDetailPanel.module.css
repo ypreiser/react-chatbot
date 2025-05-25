@@ -3,72 +3,138 @@
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  padding: 1.5rem;
-  width: 100%;
+  padding: 2rem;
+  width: 94%; /* Full width when stacked */
   position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Default max-height behavior: content-driven with internal scroll.
+     Specific max-heights are applied in media queries. */
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .title {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   color: #225ea8;
   font-size: clamp(1.2rem, 2vw, 1.5rem);
 }
 
 .closeButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #f1f5f9;
+  background: transparent;
   border: none;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-weight: bold;
-  color: #e21313;
+  color: #4a5568;
   transition: all 0.2s ease;
-  font-size: 1.2rem;
+}
+
+.closeButton svg {
+  transition: color 0.2s ease;
 }
 
 .closeButton:hover {
   background: #e2e8f0;
-  color: #ff0000;
+}
+.closeButton:hover svg {
+  color: #e53e3e;
 }
 
 .chatDetailHeader {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
   margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
-.chatDetailHeader > div {
-  padding: 0.5rem;
-  background: #f7fafc;
-  border-radius: 6px;
+.headerItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.headerLabel {
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+}
+
+.headerValue {
+  color: #2d3748;
+  font-size: 0.95rem;
+  word-break: break-all;
+}
+
+.messagesTitle {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .chatHistoryMessages {
   list-style: none;
   padding: 0;
-  margin: 1rem 0 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  max-height: 55vh;
+  min-height: 0;
   overflow-y: auto;
-  padding-right: 1rem;
+  padding-right: 0.5rem;
+  flex-grow: 1;
+}
+
+.chatHistoryMessages::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.chatHistoryMessages::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.chatHistoryMessages::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.chatHistoryMessages::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.chatHistoryMessages {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
 }
 
 .mobileToggle {
-  display: none;
-  margin-bottom: 1rem;
-  padding: 0.7rem;
+  display: none; /* Hidden by default, shown for <768px via its own media query */
+  margin-top: 1.5rem;
+  padding: 0.7rem 1rem;
   background: #3182ce;
   color: white;
   border: none;
@@ -76,26 +142,58 @@
   cursor: pointer;
   font-weight: 500;
   width: 100%;
+  text-align: center;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobileToggle svg {
+  color: white;
+}
+
+.mobileToggle:hover {
+  background-color: #225ea8;
 }
 
 .mobileHidden {
-  display: none;
+  display: none !important; /* Used by JS to hide/show panel, primarily for <768px views */
 }
 
-@media (min-width: 768px) {
+/* Styles for side-by-side desktop layout */
+@media (min-width: 1100px) {
+  /* Adjusted breakpoint from 768px */
   .chatDetailPanel {
-    flex: 2;
+    flex: 2; /* Takes more space in row layout */
+    max-height: 68vh; /* Overall constraint for side-by-side */
+    min-width: 340px; /* Ensure it has a minimum width in side-by-side mode */
+    width: auto; /* Allow flex to control width, overriding default 100% */
   }
 }
 
+/* Styles for small mobile / stacked view where ChatDetailPanel might be the primary view */
 @media (max-width: 767px) {
   .mobileToggle {
-    display: block;
+    /* This is for the "Back to Chat List" button inside ChatDetailPanel */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chatDetailPanel {
+    padding: 1rem;
+    max-height: calc(
+      100vh - 2rem
+    ); /* Panel itself constrained on small screens */
   }
 }
 
 @media (max-width: 480px) {
-  .chatDetailPanel {
-    padding: 1rem;
+  .title {
+    font-size: 1.1rem;
+  }
+  .headerItem {
+    min-width: 100%; /* Stack header items fully on very small screens */
+  }
+  .chatHistoryMessages {
+    padding-right: 0.25rem;
   }
 }

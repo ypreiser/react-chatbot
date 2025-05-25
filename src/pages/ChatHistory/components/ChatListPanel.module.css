@@ -1,20 +1,23 @@
+/* src\pages\ChatHistory\components\ChatListPanel.module.css */
 .chatListPanel {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   padding: 1rem;
-  max-height: 50vh;
-  overflow-y: auto;
+  max-height: 50vh; /* Default max-height for stacked view */
+  display: flex;
+  flex-direction: column;
 }
 
 .tableContainer {
-  overflow-x: auto;
+  overflow: auto;
+  flex-grow: 1;
   width: 100%;
 }
 
-/* For Webkit browsers (Chrome, Safari, Edge) */
 .tableContainer::-webkit-scrollbar {
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .tableContainer::-webkit-scrollbar-track {
@@ -31,7 +34,6 @@
   background: #718096;
 }
 
-/* For Firefox */
 .tableContainer {
   scrollbar-width: auto;
   scrollbar-color: #a0aec0 #e2e8f0;
@@ -40,7 +42,7 @@
 .chatListPanel table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 650px;
+  min-width: 650px; /* Table content requires this minimum */
 }
 
 .chatListPanel th,
@@ -50,7 +52,6 @@
   white-space: nowrap;
 }
 
-/* Specific column nowrap */
 .chatListPanel th:nth-child(1),
 .chatListPanel td:nth-child(1),
 .chatListPanel th:nth-child(6),
@@ -60,7 +61,6 @@
   white-space: nowrap;
 }
 
-/* Columns that allow text overflow ellipsis */
 .chatListPanel th:nth-child(3),
 .chatListPanel td:nth-child(3),
 .chatListPanel th:nth-child(4),
@@ -107,12 +107,14 @@
 }
 
 .mobileHidden {
-  display: none;
+  display: none; /* Used by JS to hide/show panel, primarily for <768px views */
 }
 
-@media (min-width: 768px) {
+/* Styles for side-by-side desktop layout */
+@media (min-width: 1100px) {
+  /* Adjusted breakpoint from 768px */
   .chatListPanel {
-    flex: 1;
-    max-height: 70vh;
+    flex: 1; /* Distributes space in row layout */
+    max-height: 70vh; /* Taller allowed height in side-by-side view */
   }
 }

@@ -364,45 +364,60 @@ const WhatsappPage = () => {
               </tr>
             </thead>
             <tbody>
-              {userConnections.map((conn) => (
-                <tr key={conn._id || conn.connectionName}>
-                  <td>{conn.connectionName}</td>
-                  <td>{conn.systemPromptName}</td>
-                  <td>
-                    <span
-                      className={`status-badge status-${
-                        conn.lastKnownStatus || "unknown"
-                      }`}
-                    >
-                      {conn.lastKnownStatus || "unknown"}
-                    </span>
-                  </td>
-                  <td>{conn.phoneNumber || "-"}</td>
-                  <td>
-                    {conn.lastConnectedAt
-                      ? new Date(conn.lastConnectedAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td>
-                    {conn.createdAt
-                      ? new Date(conn.createdAt).toLocaleString()
-                      : "-"}
-                  </td>
-                  <td>
-                    <button
-                      className="disconnect-button"
-                      disabled={
-                        isLoading || conn.lastKnownStatus !== "connected"
-                      }
-                      onClick={() => disconnectWhatsApp(conn.connectionName)}
-                    >
-                      {isLoading && activeConnectionName === conn.connectionName
-                        ? "Disconnecting..."
-                        : `Disconnect ${conn.connectionName}`}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {userConnections.map((conn) => {
+                // Find the prompt name from systemPrompts using the ID
+                const prompt = systemPrompts.find(
+                  (p) =>
+                    p._id === conn.systemPromptId ||
+                    p.id === conn.systemPromptId ||
+                    p.name === conn.systemPromptId // fallback if name is used as ID
+                );
+                const botName = prompt
+                  ? prompt.name
+                  : conn.systemPromptName ||
+                    conn.systemPromptId ||
+                    "Unknown Bot";
+                return (
+                  <tr key={conn._id || conn.connectionName}>
+                    <td>{conn.connectionName}</td>
+                    <td>{botName}</td>
+                    <td>
+                      <span
+                        className={`status-badge status-${
+                          conn.lastKnownStatus || "unknown"
+                        }`}
+                      >
+                        {conn.lastKnownStatus || "unknown"}
+                      </span>
+                    </td>
+                    <td>{conn.phoneNumber || "-"}</td>
+                    <td>
+                      {conn.lastConnectedAt
+                        ? new Date(conn.lastConnectedAt).toLocaleString()
+                        : "-"}
+                    </td>
+                    <td>
+                      {conn.createdAt
+                        ? new Date(conn.createdAt).toLocaleString()
+                        : "-"}
+                    </td>
+                    <td>
+                      <button
+                        className="disconnect-button"
+                        disabled={
+                          isLoading || conn.lastKnownStatus !== "connected"
+                        }
+                        onClick={() => disconnectWhatsApp(conn.connectionName)}
+                      >
+                        {isLoading &&
+                        activeConnectionName === conn.connectionName
+                          ? "Disconnecting..."
+                          : `Disconnect ${conn.connectionName}`}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

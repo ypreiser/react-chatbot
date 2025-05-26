@@ -9,7 +9,7 @@ export const translations = {
     errorInvalidEmail: "Please enter a valid email address.",
     errorPasswordTooShort: "Password must be at least 6 characters.",
     errorInvalidPhone: "Please enter a valid phone number.",
-    errorPromptNameExists: "A prompt with this name already exists.", // Example from original, might not be used here
+    errorPromptNameExists: "A bot with this name already exists.", // Example from original, might not be used here
     errorGenericSave: "Could not save. Please check details.",
     errorGenericLoad: "Could not load data.", // Example from original
 
@@ -62,7 +62,7 @@ export const translations = {
     errorInvalidEmail: "אנא הזן כתובת אימייל תקינה.",
     errorPasswordTooShort: "הסיסמה חייבת להכיל לפחות 6 תווים.",
     errorInvalidPhone: "אנא הזן מספר טלפון תקין.",
-    errorPromptNameExists: "הנחיה בשם זה כבר קיימת.",
+    errorPromptNameExists: "בוט בשם זה כבר קיימת.",
     errorGenericSave: "לא ניתן היה לשמור. אנא בדוק את הפרטים.",
     errorGenericLoad: "לא ניתן היה לטעון את הנתונים.",
 

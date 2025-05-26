@@ -53,7 +53,7 @@ const ChatDetailPanel = ({
           <span className={styles.headerValue}>{selectedChat.source}</span>
         </div>
         <div className={styles.headerItem}>
-          <strong className={styles.headerLabel}>System Prompt:</strong>
+          <strong className={styles.headerLabel}>Bot:</strong>
           <span className={styles.headerValue}>
             {selectedChat.systemPromptName || "-"}
           </span>

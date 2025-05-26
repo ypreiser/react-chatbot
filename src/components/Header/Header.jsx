@@ -35,10 +35,10 @@ export default function Header({ user, onLogout }) {
           </NavLink>
 
           <NavLink
-            to="/system"
+            to="/chat-settings"
             className={({ isActive }) => (isActive ? "active-link" : "")}
           >
-            System Prompts
+            Bot Settings
           </NavLink>
 
           <NavLink

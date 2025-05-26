@@ -28,7 +28,7 @@ const ChatListPanel = ({
               <th>Session</th>
               <th>User</th>
               <th>Source</th>
-              <th>System Prompt</th>
+              <th>Bot</th>
               <th>Last Active</th>
               <th>Messages</th>
               <th>Actions</th>

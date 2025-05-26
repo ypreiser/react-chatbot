@@ -1,7 +1,8 @@
 /* src\pages\SystemPromptForm\SystemPromptForm.css */
 @import url("../../variables.css");
 
-.system-prompt-form {
+.system-prompt-form,
+.chat-settings-form {
   max-width: 850px;
   margin: 2rem auto;
   padding: var(--padding-large) var(--padding-extra-large, 1.5rem);
@@ -13,16 +14,19 @@
   font-size: 0.95rem;
 }
 
-.system-prompt-form.lang-he {
+.system-prompt-form.lang-he,
+.chat-settings-form.lang-he {
   direction: rtl;
   text-align: right;
 }
-.system-prompt-form.lang-en {
+.system-prompt-form.lang-en,
+.chat-settings-form.lang-en {
   direction: ltr;
   text-align: left;
 }
 
-.system-prompt-form h1 {
+.system-prompt-form h1,
+.chat-settings-form h1 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: 2rem;
@@ -30,7 +34,8 @@
   font-weight: 600;
 }
 
-.system-prompt-form h2.form-section-header {
+.system-prompt-form h2.form-section-header,
+.chat-settings-form h2.form-section-header {
   color: var(--primary-color);
   border-bottom: 1px solid var(--border-color);
   padding-bottom: var(--padding-small);
@@ -43,11 +48,13 @@
   align-items: center;
   transition: color 0.2s;
 }
-.system-prompt-form h2.form-section-header:hover {
+.system-prompt-form h2.form-section-header:hover,
+.chat-settings-form h2.form-section-header:hover {
   color: var(--primary-hover-color);
 }
 
-.system-prompt-form h3 {
+.system-prompt-form h3,
+.chat-settings-form h3 {
   color: var(--text-color-darker, #212529);
   margin: 1.2rem 0 0.6rem;
   font-size: 1.05rem;
@@ -56,7 +63,8 @@
   padding-bottom: 0.4rem;
 }
 
-.system-prompt-form h4 {
+.system-prompt-form h4,
+.chat-settings-form h4 {
   margin: 1rem 0 0.4rem;
   font-size: 1rem;
   color: var(--text-color-dark);
@@ -67,7 +75,8 @@
   margin-bottom: 1rem;
 }
 
-.system-prompt-form label {
+.system-prompt-form label,
+.chat-settings-form label {
   display: block;
   margin-bottom: 0.4rem;
   font-weight: 500;
@@ -78,7 +87,11 @@
 .system-prompt-form input[type="text"],
 .system-prompt-form input[type="email"],
 .system-prompt-form input[type="tel"],
-.system-prompt-form textarea {
+.system-prompt-form textarea,
+.chat-settings-form input[type="text"],
+.chat-settings-form input[type="email"],
+.chat-settings-form input[type="tel"],
+.chat-settings-form textarea {
   width: 100%;
   padding: var(--padding-small) var(--padding-medium);
   border: 1px solid var(--border-color);
@@ -100,7 +113,9 @@
 }
 
 .system-prompt-form input:focus,
-.system-prompt-form textarea:focus {
+.system-prompt-form textarea:focus,
+.chat-settings-form input:focus,
+.chat-settings-form textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
@@ -357,14 +372,22 @@
 .system-prompt-form.lang-he textarea,
 .system-prompt-form.lang-he input[type="text"],
 .system-prompt-form.lang-he input[type="email"],
-.system-prompt-form.lang-he input[type="tel"] {
+.system-prompt-form.lang-he input[type="tel"],
+.chat-settings-form.lang-he textarea,
+.chat-settings-form.lang-he input[type="text"],
+.chat-settings-form.lang-he input[type="email"],
+.chat-settings-form.lang-he input[type="tel"] {
   text-align: right;
   direction: rtl;
 }
 .system-prompt-form.lang-en textarea,
 .system-prompt-form.lang-en input[type="text"],
 .system-prompt-form.lang-en input[type="email"],
-.system-prompt-form.lang-en input[type="tel"] {
+.system-prompt-form.lang-en input[type="tel"],
+.chat-settings-form.lang-en textarea,
+.chat-settings-form.lang-en input[type="text"],
+.chat-settings-form.lang-en input[type="email"],
+.chat-settings-form.lang-en input[type="tel"] {
   text-align: left;
   direction: ltr;
 }

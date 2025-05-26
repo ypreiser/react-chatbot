@@ -246,7 +246,7 @@ const WhatsappPage = () => {
     const nameToConnect = connectionNameInput.trim();
     const promptToUse = systemPromptName.trim();
     if (!nameToConnect || !promptToUse) {
-      setError("Both Connection Name and System Prompt Name are required.");
+      setError("Both Connection Name and Bot are required.");
       return;
     }
 
@@ -355,7 +355,7 @@ const WhatsappPage = () => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>System Prompt</th>
+                <th>Bot</th>
                 <th>Status</th>
                 <th>Phone Number</th>
                 <th>Last Connected</th>
@@ -417,14 +417,14 @@ const WhatsappPage = () => {
           className="connection-name-input"
           disabled={isLoading || activeConnectionName} // Disable if loading or connected
         />
-        <div className="system-prompt-dropdown-container">
+        <div className="bot-dropdown-container">
           <select
             value={systemPromptName}
             onChange={(e) => setSystemPromptName(e.target.value)}
-            className="system-prompt-input"
+            className="bot-input"
             disabled={isLoading || activeConnectionName} // Disable if loading or connected
           >
-            <option value="">Select a System Prompt</option>
+            <option value="">Select Bot</option>
             {systemPrompts.map((prompt) => (
               <option
                 key={prompt._id || prompt.id || prompt.name}

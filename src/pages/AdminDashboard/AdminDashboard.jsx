@@ -1,3 +1,4 @@
+// src\pages\AdminDashboard\AdminDashboard.jsx
 //react-chatbot2/src/pages/AdminDashboard/AdminDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../constants/api";
@@ -27,7 +28,7 @@ function AdminDashboard() {
       credentials: "include",
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch prompts");
+        if (!res.ok) throw new Error("Failed to fetch bots");
         return res.json();
       })
       .then((data) => setPrompts(data.prompts))
@@ -72,7 +73,7 @@ function AdminDashboard() {
                   <button
                     onClick={() => handleUserClick(user._id || user.userId)}
                   >
-                    View Prompts
+                    View Bots
                   </button>
                 </td>
               </tr>
@@ -82,9 +83,9 @@ function AdminDashboard() {
       </div>
       {selectedUser && (
         <div className="prompt-list">
-          <h2>System Prompts for User</h2>
+          <h2>Bots for User</h2>
           {prompts.length === 0 ? (
-            <div>No prompts found.</div>
+            <div>No bots found.</div>
           ) : (
             <table>
               <thead>

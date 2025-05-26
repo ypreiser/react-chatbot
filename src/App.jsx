@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "./constants/api";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import ChatInterface from "./pages/ChatInterface/ChatInterface";
-import SystemPromptForm from "./pages/SystemPromptForm/SystemPromptForm";
+import ChatSettingsForm from "./pages/SystemPromptForm/SystemPromptForm";
 import WhatsappPage from "./pages/Whatsapp/WhatsappPage";
 import Header from "./components/Header/Header";
 import NotFoundPage from "./pages/NotFound/NotFound";
@@ -75,7 +75,10 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<ChatInterface user={user} />} />
-            <Route path="/system" element={<SystemPromptForm user={user} />} />
+            <Route
+              path="/chat-settings"
+              element={<ChatSettingsForm user={user} />}
+            />
             <Route path="/whatsapp" element={<WhatsappPage user={user} />} />
             <Route path="/admin" element={<AdminDashboard user={user} />} />
             <Route

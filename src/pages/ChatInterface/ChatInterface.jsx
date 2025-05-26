@@ -69,7 +69,7 @@ const ChatInterface = () => {
         setSystemPrompts(response.data || []);
       } catch (err) {
         const errorMsg =
-          err.response?.data?.error || err.message || "Failed to fetch prompts";
+          err.response?.data?.error || err.message || "Failed to fetch bots";
         setError(errorMsg);
         setSystemPrompts([]);
       }
@@ -81,7 +81,7 @@ const ChatInterface = () => {
   const startNewSession = useCallback(async () => {
     const promptId = systemPromptIdInput.trim();
     if (!promptId) {
-      setError("Please select a System Prompt to start a new chat.");
+      setError("Please select Bot to start a new chat.");
       return;
     }
     if (sessionId) {
@@ -106,15 +106,13 @@ const ChatInterface = () => {
       setMessages([
         {
           role: "system",
-          content: `Chat started with SystemPrompt: ${promptName}`,
+          content: `Chat started with Bot: ${promptName}`,
         },
       ]);
       // Store session info in localStorage
       localStorage.setItem("chatSessionId", newSessionId);
       localStorage.setItem("chatActiveSystemPromptId", promptId);
-      console.log(
-        `New session started: ${newSessionId} with prompt: ${promptId}`
-      );
+      console.log(`New session started: ${newSessionId} with bot: ${promptId}`);
     } catch (err) {
       const errorMsg =
         err.response?.data?.error || err.message || "Failed to start session";
@@ -293,8 +291,7 @@ const ChatInterface = () => {
         setMessages([
           {
             role: "system",
-            content:
-              "Session ended. Select a System Prompt to start a new chat.",
+            content: "Session ended. Select Bot to start a new chat.",
           },
         ]);
         // Clean up localStorage
@@ -365,7 +362,7 @@ const ChatInterface = () => {
           setMessages([
             {
               role: "system",
-              content: `Resumed chat session with SystemPrompt: ${promptName}`,
+              content: `Resumed chat session with Bot: ${promptName}`,
             },
             ...(response.data.messages || []), // Append historical messages
           ]);
@@ -399,7 +396,7 @@ const ChatInterface = () => {
       setMessages([
         {
           role: "system",
-          content: "Select a System Prompt to start a chat.",
+          content: "Select Bot to start a chat.",
         },
       ]);
       // Focus system prompt select
@@ -568,7 +565,7 @@ const ChatInterface = () => {
         setMessages([
           {
             role: "system",
-            content: `Resumed chat session with SystemPrompt: ${promptName}`,
+            content: `Resumed chat session with Bot: ${promptName}`,
           },
           ...(historyRes.data.messages || []),
         ]);
@@ -633,7 +630,7 @@ const ChatInterface = () => {
                 uploading
               } // Disable if busy
             >
-              <option value="">Select a System Prompt...</option>
+              <option value="">Select Bot...</option>
               {systemPrompts.map((prompt) => (
                 <option key={prompt._id} value={prompt._id}>
                   {prompt.name}
@@ -654,7 +651,7 @@ const ChatInterface = () => {
           </div>
         ) : (
           <div className="system-prompt-container active-prompt-display">
-            <span>Active SystemPrompt:</span>
+            <span>Active Bot:</span>
             <strong>
               {systemPrompts.find((p) => p._id === activeSystemPromptId)
                 ?.name || activeSystemPromptId}

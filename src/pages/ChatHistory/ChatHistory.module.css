@@ -3,7 +3,7 @@
   padding: clamp(1rem, 2vw, 2rem);
   font-family: "Segoe UI", Arial, sans-serif;
   background: #f7f8fa;
-  min-height: 100vh;
+  height: calc(90vh - (var(--header-height)));
 }
 
 .title {

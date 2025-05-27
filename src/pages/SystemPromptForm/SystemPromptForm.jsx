@@ -75,7 +75,7 @@ export default function SystemPromptForm() {
   // Fetch list of prompt names for dropdown/datalist
   const fetchPromptList = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/systemprompt`, {
+      const response = await axios.get(`${API_BASE_URL}/botprofile`, {
         withCredentials: true,
       });
       setPromptList(response.data || []);
@@ -106,7 +106,7 @@ export default function SystemPromptForm() {
 
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/systemprompt/${encodeURIComponent(trimmedName)}`,
+          `${API_BASE_URL}/botprofile/${encodeURIComponent(trimmedName)}`,
           { withCredentials: true }
         );
         setPrompt(response.data); // Populate form with loaded data

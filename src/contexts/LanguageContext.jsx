@@ -1,7 +1,7 @@
 // src\contexts\LanguageContext.jsx
 // src/contexts/LanguageContext.js
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { translations } from "../data/registerTranslations";
+import { translations } from "../data/translations";
 
 const LanguageContext = createContext();
 

@@ -1,0 +1,231 @@
+/* src\pages\BotProfileForm\common\CommonFormStyles.module.css */
+/* Styles for CollapsibleSection, ArrayInput, ObjectArrayInput */
+
+/* --- Collapsible Section --- */
+.collapsibleSection {
+  margin-bottom: var(--margin-large);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--text-color-light); /* White background */
+}
+
+.sectionHeader {
+  font-size: 1.2rem; /* Was 1.2rem */
+  font-weight: 600;
+  color: var(--primary-color);
+  padding: var(--padding-medium) var(--padding-large);
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid transparent; /* Prepare for border when open */
+  transition: background-color 0.2s;
+}
+.collapsibleSection.open .sectionHeader {
+  border-bottom-color: var(--border-color);
+  background-color: var(--secondary-background); /* Light bg when open */
+}
+.sectionHeader:hover {
+  background-color: var(--secondary-background);
+}
+
+.arrow {
+  margin-left: var(--padding-small);
+  transition: transform 0.3s ease-in-out;
+  font-size: 1rem;
+}
+[dir="rtl"] .arrow {
+  margin-left: 0;
+  margin-right: var(--padding-small);
+}
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+.sectionContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease-out, padding 0.35s ease-out;
+  padding: 0 var(--padding-large);
+}
+.sectionContent.open {
+  max-height: 5000px; /* Large enough for content */
+  padding: var(--padding-large) var(--padding-large);
+}
+
+/* --- Input Fields (General for Array/Object Inputs) --- */
+.inputField,
+.textareaField {
+  /* General styling for inputs/textareas in these components */
+  width: 100%;
+  padding: var(--padding-small);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  margin-bottom: var(--margin-small); /* Space below each input */
+}
+.inputField:focus,
+.textareaField:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2);
+}
+.textareaField {
+  min-height: 60px;
+  resize: vertical;
+}
+
+/* --- Buttons (General for Array/Object Inputs) --- */
+.button {
+  border: none;
+  padding: var(--padding-small) var(--padding-medium);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+.addButton {
+  background-color: var(--add-button-color);
+  color: var(--text-color-light);
+  margin-top: var(--margin-small); /* Space above add button */
+}
+.addButton:hover {
+  background-color: var(--add-button-hover-color);
+}
+.removeButton {
+  background-color: var(--remove-button-color);
+  color: var(--text-color-light);
+}
+.removeButton:hover {
+  background-color: var(--remove-button-hover-color);
+}
+.removeButtonSmall {
+  /* For object array item headers */
+  background-color: transparent;
+  color: var(--error-color);
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--error-color);
+}
+.removeButtonSmall:hover {
+  background-color: var(--error-bg-color);
+  color: var(--error-hover-color);
+}
+
+/* --- ArrayInput Specific --- */
+.arrayInputContainer {
+  padding: var(--padding-small);
+  /* background-color: #fdfdfd; */
+  /* border: 1px dashed var(--border-color); */
+  border-radius: var(--border-radius);
+}
+.arrayInputLabel {
+  /* Label for the whole array input section */
+  display: block;
+  font-weight: 500;
+  margin-bottom: var(--margin-medium);
+  color: var(--text-color-dark);
+}
+.arrayItem {
+  display: flex;
+  align-items: flex-start; /* Align items to top if textarea grows */
+  gap: var(--padding-small);
+  margin-bottom: var(--margin-medium);
+  padding-bottom: var(--margin-medium);
+  border-bottom: 1px dotted #efefef;
+}
+.arrayItem:last-child {
+  margin-bottom: var(
+    --margin-small
+  ); /* Reduce margin for last item before add button */
+  border-bottom: none;
+}
+.arrayItem .inputField,
+.arrayItem .textareaField {
+  flex-grow: 1;
+  margin-bottom: 0; /* Remove bottom margin as gap handles it */
+}
+.arrayItem .removeButton {
+  flex-shrink: 0;
+  margin-top: 0; /* Align with top of input */
+}
+
+.objectArrayLabel {
+  /* For main section title like "Example Responses" */
+  font-size: 1.1rem;
+  color: var(--text-color-dark);
+  margin-bottom: var(--margin-medium);
+  padding-bottom: var(--padding-small);
+  border-bottom: 1px solid #eee;
+}
+
+.objectArrayItemCard {
+  background-color: var(--secondary-background); /* Light bg for cards */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--padding-medium);
+  margin-bottom: var(--margin-large);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.objectArrayItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--margin-medium);
+  padding-bottom: var(--padding-small);
+  border-bottom: 1px dotted #ccc;
+}
+.objectArrayItemHeader h5 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.objectArrayItemCard .formGroup {
+  /* For groups within a card */
+  margin-bottom: var(--margin-medium);
+}
+.objectArrayItemCard .formGroup:last-child {
+  margin-bottom: 0;
+}
+.objectArrayItemCard .formGroup label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-color-medium);
+}
+
+/* --- Tags Input Specific (if using text input for comma-separated) --- */
+/* .tagsInputGroup {
+
+} 
+*/
+.tagsDisplayArea {
+  margin-top: var(--margin-small);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--padding-small);
+}
+.tagPill {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  padding: 0.2rem var(--padding-small);
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+}
+.tagPill button {
+  /* Remove button for a tag pill */
+  background: transparent;
+  color: var(--text-color-light);
+  border: none;
+  margin-left: var(--padding-small);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+}

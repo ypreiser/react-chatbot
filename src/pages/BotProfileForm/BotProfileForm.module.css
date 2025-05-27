@@ -1,0 +1,228 @@
+/* src/pages/BotProfileForm/BotProfileForm.module.css */
+/* Ensure variables.css is globally imported or imported here */
+/* @import '../../variables.css'; */
+
+.botProfileFormContainer {
+  max-width: 900px;
+  margin: var(--margin-large) auto var(--margin-extra-large, 3rem) auto; /* More bottom margin */
+  padding: var(--padding-large);
+  font-family: var(--font-family);
+  background-color: var(--text-color-light);
+  border-radius: var(--border-radius);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+  color: var(--text-color-dark);
+}
+
+.botProfileFormContainer.lang-he {
+  direction: rtl;
+}
+.botProfileFormContainer.lang-en {
+  direction: ltr;
+}
+
+.botProfileFormContainer h1 {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: var(--margin-large);
+  font-size: 2rem;
+  font-weight: 700; /* Bolder title */
+  letter-spacing: -0.5px;
+}
+
+.fetchSection {
+  display: flex;
+  gap: var(--padding-medium);
+  margin-bottom: var(--margin-medium);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--padding-medium);
+  background-color: var(--secondary-background);
+  border-radius: var(--border-radius);
+}
+/* Uses commonStyles.inputField and commonStyles.button */
+
+.modeIndicator {
+  font-size: 0.9rem;
+  color: var(--text-color-medium);
+  margin-left: auto;
+  padding: var(--padding-small) var(--padding-medium);
+  background-color: var(--assistant-bubble-color);
+  border-radius: var(--border-radius);
+  font-style: italic;
+}
+[dir="rtl"] .modeIndicator {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.globalErrorMessage,
+.globalSuccessMessage {
+  padding: var(--padding-medium);
+  margin: var(--margin-medium) 0;
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+.globalErrorMessage {
+  background-color: var(--error-bg-color);
+  color: var(--error-color);
+  border-color: var(--error-border-color);
+}
+.globalSuccessMessage {
+  background-color: var(--success-bg-color);
+  color: var(--success-color);
+  border-color: var(--success-border-color);
+}
+
+.botForm {
+  margin-top: var(--margin-medium);
+  padding: var(--padding-medium) 0; /* Remove horizontal padding, steps/sections handle it */
+}
+
+.formStep {
+  padding-top: var(--padding-medium);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.formGroup {
+  margin-bottom: var(--margin-large);
+}
+.formGroup label {
+  display: block;
+  margin-bottom: var(--margin-small);
+  font-weight: 600;
+  color: var(--text-color-dark);
+  font-size: 0.95rem;
+}
+/* Input/textarea/select fields inside .formGroup will use .commonStyles.inputField / .textareaField */
+
+.formNavButtons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--margin-extra-large, 2rem); /* Standardized fallback */
+  padding-top: var(--margin-large);
+  border-top: 1px solid var(--border-color);
+}
+
+.formNavButtons button {
+  padding: var(--padding-medium) var(--padding-extra-large, 1.5rem);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  border: none;
+  min-width: 120px; /* Ensure buttons have some minimum width */
+  text-align: center;
+}
+.formNavButtons button:focus-visible {
+  outline: 2px solid var(--primary-hover-color);
+  outline-offset: 2px;
+}
+
+.formNavButtons .prevButton {
+  background-color: var(--text-color-light); /* White background */
+  color: var(--text-color-dark);
+  border: 1px solid var(--border-color);
+}
+.formNavButtons .prevButton:hover:not(:disabled) {
+  background-color: var(--secondary-background); /* Light gray hover */
+  border-color: var(--text-color-medium);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.formNavButtons .nextButton,
+.formNavButtons .submitButton {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+}
+.formNavButtons .nextButton:hover:not(:disabled),
+.formNavButtons .submitButton:hover:not(:disabled) {
+  background-color: var(--primary-hover-color);
+  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2); /* Shadow for primary buttons */
+}
+
+.formNavButtons button:disabled {
+  background-color: var(--assistant-bubble-color) !important;
+  color: var(--text-color-medium) !important;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none !important;
+  border-color: var(
+    --border-color
+  ) !important; /* Ensure border color on disabled prev button */
+}
+
+.fieldNote {
+  font-size: 0.8rem;
+  color: var(--text-color-medium);
+  margin-top: var(--padding-small);
+}
+.inlineError {
+  display: block;
+  color: var(--error-color);
+  font-size: 0.85rem;
+  margin-top: var(--padding-small);
+  font-weight: 500;
+}
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-small);
+  margin-top: var(--margin-small);
+}
+.checkboxGroup input[type="checkbox"] {
+  width: 1.1em; /* Slightly larger checkbox */
+  height: 1.1em;
+  margin: 0;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  position: relative; /* For custom styling if needed */
+  top: 1px; /* Minor vertical alignment */
+}
+.checkboxGroup label {
+  margin-bottom: 0;
+  font-weight: normal;
+  font-size: 0.9rem;
+  color: var(--text-color-dark);
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .formNavButtons {
+    flex-direction: column-reverse; /* Stack buttons on mobile */
+    gap: var(--margin-medium);
+  }
+  .formNavButtons button {
+    width: 100%; /* Full width buttons on mobile */
+  }
+  .botProfileFormContainer h1 {
+    font-size: 1.6rem;
+  }
+  .fetchSection {
+    flex-direction: column;
+  }
+  .fetchSection input[type="text"],
+  .fetchSection button {
+    width: 100%;
+  }
+  .modeIndicator {
+    width: 100%;
+    text-align: center;
+    margin-top: var(--margin-small);
+  }
+}

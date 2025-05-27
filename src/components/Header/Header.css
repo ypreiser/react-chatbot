@@ -1,14 +1,6 @@
-/* src\components\Header\Header.css */
-:root {
-  --primary-color: #007bff;
-  --primary-hover-color: #0056b3;
-  --text-color-dark: #333;
-  --padding-large: 1rem;
-  --border-color: #ddd;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  --header-height: 70px;
-}
+/* src/components/Header/Header.css */
+/* Ensure variables.css is imported if not globally available */
+/* @import '../../variables.css'; */
 
 .header {
   display: flex;
@@ -17,103 +9,184 @@
   padding: 0 var(--padding-large);
   height: var(--header-height);
   border-bottom: 1px solid var(--border-color);
-  background-color: #fff;
+  background-color: var(--text-color-light); /* Using white from variables */
   color: var(--text-color-dark);
   font-family: var(--font-family);
-  direction: ltr;
+  direction: ltr; /* Explicitly LTR for header layout consistency */
   box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Ensure header stays on top */
+}
+
+.header-left,
+.header-center,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-medium);
 }
 
 .header-left {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--padding-large);
+  flex-shrink: 0; /* Prevent logo from shrinking too much */
 }
 .header-center {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--padding-large);
+  flex-grow: 1;
+  justify-content: center; /* Center the title */
+  gap: var(--padding-small);
+  text-align: center;
+}
+.header-right {
+  flex-shrink: 0;
 }
 
 .header-logo {
-  height: calc(var(--header-height) * 0.7);
+  height: calc(var(--header-height) * 0.65); /* Slightly smaller */
   width: auto;
+  margin-right: var(--margin-medium); /* Space after logo */
 }
 
 .header h1 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.3rem; /* Adjusted size */
   color: var(--primary-color);
   font-weight: 600;
+  white-space: nowrap; /* Prevent wrapping of titles */
+}
+.header-center h1:first-of-type {
+  color: var(--text-color-dark); /* Make "Chatbot Admin:" darker */
 }
 
 .nav {
   display: flex;
-  gap: calc(var(--padding-large) * 1.5);
-  font-size: 0.95rem;
+  gap: var(--margin-medium); /* Consistent spacing */
+  font-size: 0.9rem; /* Slightly smaller nav items */
 }
 
 .nav a {
   text-decoration: none;
-  color: var(--text-color-dark);
-  padding: 0.5rem 0;
+  color: var(--text-color-medium); /* Medium color for non-active links */
+  padding: var(--padding-small) 0;
   position: relative;
   transition: color 0.2s;
+  font-weight: 500;
 }
 
 .nav a:hover {
-  color: var(--primary-color);
+  color: var(--primary-hover-color);
 }
 
 .nav a.active-link {
   color: var(--primary-color);
-  font-weight: 500;
+  font-weight: 600; /* Bold active link */
 }
 
 .nav a.active-link::after {
   content: "";
   position: absolute;
-  bottom: -1px;
+  bottom: -2px; /* Align with border-bottom of header */
   left: 0;
   width: 100%;
-  height: 2px;
+  height: 3px; /* Thicker underline */
   background-color: var(--primary-color);
+  border-radius: 2px;
 }
 
-.header-user {
-  font-size: 1.1rem;
+/* Language Toggle Button in Header */
+.language-toggle-header {
+  margin-left: var(--margin-small);
+}
+
+.language-button {
+  background-color: var(--secondary-background);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  padding: var(--padding-small) var(--padding-medium);
+  border-radius: var(--border-radius);
+  cursor: pointer;
   font-weight: 500;
-  color: #2d3a4a;
-  margin-left: 1.5rem;
-  margin-top: 0.2rem;
-  letter-spacing: 0.02em;
-  background: #f2f6fa;
-  padding: 0.2rem 0.8rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  display: inline-block;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 0.85rem;
+}
+
+.language-button:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  border-color: var(--primary-color);
 }
 
 .logout-link {
-  color: #fff;
-  background: #007bff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--primary-color);
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  padding: calc(var(--padding-small) - 1px) var(--padding-medium); /* Adjust for border */
+  font-size: 0.9rem;
+  font-weight: 500;
   text-decoration: none;
-  transition: background 0.2s, color 0.2s;
-  margin-left: 1.5rem;
+  transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  display: inline-block;
+  display: inline-flex; /* Allows alignment */
+  align-items: center;
+  margin-left: var(--margin-medium);
 }
-.logout-link:hover,
-.logout-link.active-link {
-  background: #0056b3;
-  color: #fff;
+.logout-link:hover {
+  background: var(--primary-color);
+  color: var(--text-color-light);
   text-decoration: none;
+}
+
+/* Responsive adjustments for header */
+@media (max-width: 992px) {
+  /* Tablet and smaller */
+  .header-center h1 {
+    font-size: 1.1rem;
+  }
+  .nav {
+    gap: var(--margin-small);
+  }
+  .nav a {
+    font-size: 0.85rem;
+  }
+  .logout-link {
+    font-size: 0.85rem;
+    padding: calc(var(--padding-small) - 2px) var(--padding-small);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile */
+  .header {
+    padding: 0 var(--padding-medium);
+    flex-wrap: wrap; /* Allow wrapping for very small screens if necessary */
+    height: auto; /* Allow height to adjust if wrapping */
+    min-height: var(--header-height);
+  }
+  .header-center {
+    order: -1; /* Move title to top on mobile potentially */
+    width: 100%;
+    justify-content: flex-start; /* Align title to left for mobile */
+    padding-bottom: var(--padding-small);
+    margin-bottom: var(--padding-small);
+    border-bottom: 1px dashed var(--border-color); /* Separator if it wraps weirdly */
+  }
+  .header-center h1:first-of-type {
+    display: none; /* Hide "Chatbot Admin:" on small screens */
+  }
+  .header-left {
+    flex-grow: 1; /* Allow logo and lang toggle to take space */
+  }
+  .header-right {
+    width: 100%; /* Make nav take full width */
+    justify-content: space-around; /* Spread out nav items */
+    margin-top: var(--margin-small);
+  }
+  .nav {
+    width: 100%;
+    justify-content: space-around;
+    font-size: 0.8rem;
+  }
+  .logout-link {
+    margin-left: 0; /* Remove left margin when stacked */
+  }
 }

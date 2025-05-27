@@ -203,7 +203,9 @@ const WhatsappPage = () => {
   useEffect(() => {
     async function fetchPrompts() {
       try {
-        const response = await axios.get(`${API_CHAT_URL}/prompts`);
+        const response = await axios.get(`${API_BASE_URL}/botprofile`, {
+          withCredentials: true,
+        });
         console.log("feched system prompts:", response);
 
         setSystemPrompts(response.data || []);

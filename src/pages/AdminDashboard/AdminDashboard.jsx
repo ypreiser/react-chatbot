@@ -24,9 +24,13 @@ function AdminDashboard() {
     setSelectedUser(userId);
     setPrompts([]);
     setError("");
-    fetch(`${API_BASE_URL}/admin/user/${userId}/prompts`, {
-      credentials: "include",
-    })
+    fetch(
+      `${API_BASE_URL}/admin/user/${userId}
+      `,
+      {
+        credentials: "include",
+      }
+    )
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch bots");
         return res.json();
